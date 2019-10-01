@@ -50,7 +50,7 @@ public class SiriusWorkerTest {
         requestHeaders.put("Accept", "application/xml");
         context.globalState(Headers.class, requestHeaders);
 
-        context.variable("fromPosition", 1);
+        context.variable("fromSequence", 1);
 
         Flow flow = SiriusFlow.getFlow(testServer.testURL(""));
 

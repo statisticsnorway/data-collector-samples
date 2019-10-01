@@ -13,6 +13,9 @@
     <artifactId>data-collector-ske-sirius-worker</artifactId>
     <packaging>jar</packaging>
 
+    <name>Data Collector Samples SKE Sirius Worker</name>
+    <description>Data Collector Samples SKE Sirius Worker</description>
+
     <dependencies>
         <dependency>
             <groupId>no.ssb.config</groupId>

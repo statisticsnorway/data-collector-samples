@@ -1,5 +1,6 @@
 package no.ssb.dc.samples.ske.sirius;
 
+import no.ssb.config.DynamicConfiguration;
 import no.ssb.dc.api.ConfigurationMap;
 import no.ssb.dc.api.Flow;
 import no.ssb.dc.api.content.ContentStore;
@@ -17,6 +18,7 @@ import no.ssb.service.provider.api.ProviderConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
@@ -35,35 +37,52 @@ public class SiriusWorkerTest {
 
     Services services;
 
+    DynamicConfiguration configuration;
+
+    ContentStore contentStore;
+
     @BeforeMethod
     public void setup() {
         Client.Builder clientBuilder = Client.newClientBuilder();
+
         SSLContext sslContext = CertsHelper.createSSLContext();
         assertNotNull(sslContext);
+
         clientBuilder.sslContext(sslContext);
 
+        configuration = testServer.getConfiguration();
+        contentStore = ProviderConfigurator.configure(configuration.asMap(),
+                configuration.evaluateToString("content.store.provider"), ContentStoreInitializer.class);
         services = Services.create()
-                .register(ConfigurationMap.class, new ConfigurationMap(testServer.getConfiguration().asMap()))
+                .register(ConfigurationMap.class, new ConfigurationMap(configuration.asMap()))
                 .register(Client.class, clientBuilder.build())
                 .register(BufferedReordering.class, new BufferedReordering<>())
-                .register(ContentStore.class, ProviderConfigurator.configure(testServer.getConfiguration().asMap(), "discarding", ContentStoreInitializer.class))
-                .register(FixedThreadPool.class, FixedThreadPool.newInstance(testServer.getConfiguration()));
-
+                .register(ContentStore.class, contentStore)
+                .register(FixedThreadPool.class, FixedThreadPool.newInstance(configuration));
     }
 
-    //@Ignore
+    @Test
+    public void testPrintConfig() {
+        LOG.info("Config:\n{}", SiriusFlow.getFlow().serialize());
+//        LOG.info("Config:\n{}", SiriusFlow.getFlow().end().startNode());
+    }
+
+    @Ignore
     @Test
     public void thatWorkerCollectSiriusFlow() throws InterruptedException {
         ExecutionContext context = new ExecutionContext.Builder().services(services).build();
+
+        context.variable("baseURL", "https://api-at.sits.no");
 
         Headers requestHeaders = new Headers();
         requestHeaders.put("Accept", "application/xml");
         context.globalState(Headers.class, requestHeaders);
 
-        context.variable("baseURL", "https://api-at.sits.no");
-        context.variable("fromSequence", 1);
+        String lastPosition = contentStore.lastPosition(configuration.evaluateToString("namespace.default"));
+        String startPosition = (lastPosition == null ? "1" : lastPosition);
+        context.variable("fromSequence", startPosition);
 
-        Flow flow = SiriusFlow.getFlow();
+        Flow flow = SiriusFlow.getFlow().end();
 
         Worker worker = new Worker(flow.startNode(), context);
         worker.run();

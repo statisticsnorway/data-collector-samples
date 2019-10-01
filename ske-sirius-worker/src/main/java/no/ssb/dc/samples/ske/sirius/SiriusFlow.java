@@ -19,7 +19,7 @@ public class SiriusFlow {
     private SiriusFlow() {
     }
 
-    public static Flow getFlow(String baseURL) {
+    public static Flow getFlow() {
         return Flow.start("Collect Sirius", "loop")
                 .node(paginate("loop")
                         .variable("fromSequence", "${nextSequence}")
@@ -30,7 +30,7 @@ public class SiriusFlow {
                 )
                 .node(get("part")
                         .header("accept", "application/xml")
-                        .url(baseURL + "/api/formueinntekt/skattemelding/utkast/hendelser/?fraSekvensnummer=${fromSequence}&antall=100")
+                        .url("${baseURL}/api/formueinntekt/skattemelding/utkast/hendelser/?fraSekvensnummer=${fromSequence}&antall=100")
                         .step(sequence(xpath("/hendelser/hendelse"))
                                 .expected(xpath("/hendelse/sekvensnummer"))
                         )
@@ -48,7 +48,7 @@ public class SiriusFlow {
                         .returnVariables("nextSequence")
                 )
                 .node(get("utkast-melding")
-                        .url(baseURL + "/api/formueinntekt/skattemelding/utkast/ssb/${year}/${utkastIdentifikator}")
+                        .url("${baseURL}/api/formueinntekt/skattemelding/utkast/ssb/${year}/${utkastIdentifikator}")
                         .step(addContent("${position}", "utkastIdentifikator"))
                 )
                 .end();

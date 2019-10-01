@@ -41,7 +41,7 @@ public class SiriusFlow {
                                 .step(addContent("${position}", "entry"))
                                 .step(execute("utkast-melding")
                                         .inputVariable("utkastIdentifikator", xpath("/hendelse/identifikator"))
-                                        .inputVariable("year", xpath("//hendelse/gjelderPeriode"))
+                                        .inputVariable("year", xpath("/hendelse/gjelderPeriode"))
                                 )
                                 .step(publish("${position}"))
                         )

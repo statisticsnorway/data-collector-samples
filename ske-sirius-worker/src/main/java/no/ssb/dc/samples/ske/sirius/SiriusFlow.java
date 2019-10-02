@@ -1,18 +1,17 @@
 package no.ssb.dc.samples.ske.sirius;
 
+import no.ssb.dc.api.Builders;
 import no.ssb.dc.api.Flow;
 import no.ssb.dc.api.node.builder.FlowBuilder;
 
 import static no.ssb.dc.api.Builders.addContent;
 import static no.ssb.dc.api.Builders.eval;
 import static no.ssb.dc.api.Builders.execute;
-import static no.ssb.dc.api.Builders.get;
 import static no.ssb.dc.api.Builders.nextPage;
 import static no.ssb.dc.api.Builders.paginate;
 import static no.ssb.dc.api.Builders.parallel;
 import static no.ssb.dc.api.Builders.publish;
 import static no.ssb.dc.api.Builders.sequence;
-import static no.ssb.dc.api.Builders.validateRequest;
 import static no.ssb.dc.api.Builders.whenVariableIsNull;
 import static no.ssb.dc.api.Builders.xpath;
 
@@ -21,7 +20,7 @@ public class SiriusFlow {
     private SiriusFlow() {
     }
 
-    public static FlowBuilder getFlow() {
+    public static FlowBuilder get() {
         return Flow.start("Collect Sirius", "loop")
                 .node(paginate("loop")
                         .variable("fromSequence", "${nextSequence}")
@@ -30,10 +29,13 @@ public class SiriusFlow {
                         .prefetchThreshold(0.5)
                         .until(whenVariableIsNull("nextSequence"))
                 )
-                .node(get("part")
+                .node(Builders.get("part")
                         .header("accept", "application/xml")
                         .url("${baseURL}/api/formueinntekt/skattemelding/utkast/hendelser/?fraSekvensnummer=${fromSequence}&antall=100")
-                        .step(validateRequest())
+                        .validateResponse().success(200)
+                        .validateResponse().fail(400)
+                        .validateResponse().fail(404)
+                        .validateResponse().fail(500)
                         .step(sequence(xpath("/hendelser/hendelse"))
                                 .expected(xpath("/hendelse/sekvensnummer"))
                         )
@@ -53,7 +55,7 @@ public class SiriusFlow {
                         )
                         .returnVariables("nextSequence")
                 )
-                .node(get("utkast-melding")
+                .node(Builders.get("utkast-melding")
                         .url("${baseURL}/api/formueinntekt/skattemelding/utkast/ssb/${year}/${utkastIdentifikator}")
                         .step(addContent("${position}", "utkastIdentifikator"))
                 );

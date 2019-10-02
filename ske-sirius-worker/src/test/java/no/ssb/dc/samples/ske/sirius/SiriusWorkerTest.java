@@ -7,7 +7,6 @@ import no.ssb.dc.api.content.ContentStore;
 import no.ssb.dc.api.content.ContentStoreInitializer;
 import no.ssb.dc.api.context.ExecutionContext;
 import no.ssb.dc.api.http.Client;
-import no.ssb.dc.api.http.Headers;
 import no.ssb.dc.api.services.Services;
 import no.ssb.dc.core.executor.BufferedReordering;
 import no.ssb.dc.core.executor.FixedThreadPool;
@@ -63,7 +62,7 @@ public class SiriusWorkerTest {
 
     @Test
     public void testPrintConfig() {
-        LOG.info("Config:\n{}", SiriusFlow.getFlow().serialize());
+        LOG.info("Config:\n{}", SiriusFlow.get().serialize());
 //        LOG.info("Config:\n{}", SiriusFlow.getFlow().end().startNode());
     }
 
@@ -74,17 +73,22 @@ public class SiriusWorkerTest {
 
         context.variable("baseURL", "https://api-at.sits.no");
 
-        Headers requestHeaders = new Headers();
-        requestHeaders.put("Accept", "application/xml");
-        context.globalState(Headers.class, requestHeaders);
-
         String lastPosition = contentStore.lastPosition(configuration.evaluateToString("namespace.default"));
         String startPosition = (lastPosition == null ? "1" : lastPosition);
         context.variable("fromSequence", startPosition);
 
-        Flow flow = SiriusFlow.getFlow().end();
+        Flow flow = SiriusFlow.get().end();
 
         Worker worker = new Worker(flow.startNode(), context);
         worker.run();
+
+//        Worker.newBuilder()
+//                .flow(SiriusFlow.get())
+//                .services(services)
+//                .initialPosition("1")
+//                .header("Accept", "application/xml")
+//                .variable("baseURL", "https://api-at.sits.no")
+//                .build()
+//                .run();
     }
 }

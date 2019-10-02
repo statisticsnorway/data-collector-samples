@@ -71,8 +71,6 @@ public class SiriusWorkerTest {
     public void thatWorkerCollectSiriusFlow() throws InterruptedException {
         ExecutionContext context = new ExecutionContext.Builder().services(services).build();
 
-        context.variable("baseURL", "https://api-at.sits.no");
-
         String lastPosition = contentStore.lastPosition(configuration.evaluateToString("namespace.default"));
         String startPosition = (lastPosition == null ? "1" : lastPosition);
         context.variable("fromSequence", startPosition);

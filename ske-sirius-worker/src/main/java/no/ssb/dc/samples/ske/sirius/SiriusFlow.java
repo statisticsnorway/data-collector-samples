@@ -23,6 +23,7 @@ public class SiriusFlow {
     public static FlowBuilder get() {
         return Flow.start("Collect Sirius", "loop")
                 .node(paginate("loop")
+                        .variable("baseURL", "https://api-at.sits.no")
                         .variable("fromSequence", "${nextSequence}")
                         .addPageContent()
                         .step(execute("part"))

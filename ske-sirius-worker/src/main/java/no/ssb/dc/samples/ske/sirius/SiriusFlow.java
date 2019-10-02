@@ -12,6 +12,7 @@ import static no.ssb.dc.api.Builders.paginate;
 import static no.ssb.dc.api.Builders.parallel;
 import static no.ssb.dc.api.Builders.publish;
 import static no.ssb.dc.api.Builders.sequence;
+import static no.ssb.dc.api.Builders.status;
 import static no.ssb.dc.api.Builders.whenVariableIsNull;
 import static no.ssb.dc.api.Builders.xpath;
 
@@ -33,10 +34,7 @@ public class SiriusFlow {
                 .node(Builders.get("part")
                         .header("accept", "application/xml")
                         .url("${baseURL}/api/formueinntekt/skattemelding/utkast/hendelser/?fraSekvensnummer=${fromSequence}&antall=100")
-                        .validateResponse().success(200)
-                        .validateResponse().fail(400)
-                        .validateResponse().fail(404)
-                        .validateResponse().fail(500)
+                        .validate(status().success(200).fail(400).fail(404).fail(500))
                         .step(sequence(xpath("/hendelser/hendelse"))
                                 .expected(xpath("/hendelse/sekvensnummer"))
                         )

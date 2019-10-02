@@ -57,6 +57,7 @@ public class SiriusFlow {
                         .returnVariables("nextSequence")
                 )
                 .node(Builders.get("utkast-melding")
+                        .header("accept", "application/xml")
                         .url("${baseURL}/api/formueinntekt/skattemelding/utkast/ssb/${year}/${utkastIdentifikator}")
                         .step(addContent("${position}", "utkastIdentifikator"))
                 );

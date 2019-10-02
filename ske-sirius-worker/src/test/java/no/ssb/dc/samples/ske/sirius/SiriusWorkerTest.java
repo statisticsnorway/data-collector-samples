@@ -11,6 +11,7 @@ import no.ssb.dc.api.services.Services;
 import no.ssb.dc.core.executor.BufferedReordering;
 import no.ssb.dc.core.executor.FixedThreadPool;
 import no.ssb.dc.core.executor.Worker;
+import no.ssb.dc.core.handler.ParallelHandler;
 import no.ssb.dc.test.server.TestServer;
 import no.ssb.dc.test.server.TestServerListener;
 import no.ssb.service.provider.api.ProviderConfigurator;
@@ -70,6 +71,8 @@ public class SiriusWorkerTest {
     @Test
     public void thatWorkerCollectSiriusFlow() throws InterruptedException {
         ExecutionContext context = new ExecutionContext.Builder().services(services).build();
+
+        context.state(ParallelHandler.MAX_NUMBER_OF_ITERATIONS, 1);
 
         String lastPosition = contentStore.lastPosition(configuration.evaluateToString("namespace.default"));
         String startPosition = (lastPosition == null ? "1" : lastPosition);

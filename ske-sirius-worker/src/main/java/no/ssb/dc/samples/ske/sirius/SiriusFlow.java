@@ -5,6 +5,7 @@ import no.ssb.dc.api.Flow;
 import no.ssb.dc.api.node.builder.FlowBuilder;
 
 import static no.ssb.dc.api.Builders.addContent;
+import static no.ssb.dc.api.Builders.context;
 import static no.ssb.dc.api.Builders.eval;
 import static no.ssb.dc.api.Builders.execute;
 import static no.ssb.dc.api.Builders.nextPage;
@@ -23,8 +24,12 @@ public class SiriusFlow {
 
     public static FlowBuilder get() {
         return Flow.start("Collect Sirius", "loop")
+                .configure(
+                        context()
+                                .header("accept", "application/xml")
+                                .variable("baseURL", "https://api-at.sits.no")
+                )
                 .node(paginate("loop")
-                        .variable("baseURL", "https://api-at.sits.no")
                         .variable("fromSequence", "${nextSequence}")
                         .addPageContent()
                         .step(execute("part"))
@@ -32,7 +37,6 @@ public class SiriusFlow {
                         .until(whenVariableIsNull("nextSequence"))
                 )
                 .node(Builders.get("part")
-                        .header("accept", "application/xml")
                         .url("${baseURL}/api/formueinntekt/skattemelding/utkast/hendelser/?fraSekvensnummer=${fromSequence}&antall=100")
                         .validate(status().success(200).fail(400).fail(404).fail(500))
                         .step(sequence(xpath("/hendelser/hendelse"))
@@ -55,7 +59,6 @@ public class SiriusFlow {
                         .returnVariables("nextSequence")
                 )
                 .node(Builders.get("utkast-melding")
-                        .header("accept", "application/xml")
                         .url("${baseURL}/api/formueinntekt/skattemelding/utkast/ssb/${year}/${utkastIdentifikator}")
                         .step(addContent("${position}", "utkastIdentifikator"))
                 );

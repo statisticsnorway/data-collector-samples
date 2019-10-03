@@ -8,6 +8,7 @@ import static no.ssb.dc.api.Builders.addContent;
 import static no.ssb.dc.api.Builders.context;
 import static no.ssb.dc.api.Builders.eval;
 import static no.ssb.dc.api.Builders.execute;
+import static no.ssb.dc.api.Builders.get;
 import static no.ssb.dc.api.Builders.nextPage;
 import static no.ssb.dc.api.Builders.paginate;
 import static no.ssb.dc.api.Builders.parallel;
@@ -22,7 +23,7 @@ public class SiriusFlow {
     private SiriusFlow() {
     }
 
-    public static FlowBuilder get() {
+    public static FlowBuilder builder() {
         return Flow.start("Collect Sirius", "loop")
                 .configure(
                         context()
@@ -36,7 +37,7 @@ public class SiriusFlow {
                         .prefetchThreshold(0.5)
                         .until(whenVariableIsNull("nextSequence"))
                 )
-                .node(Builders.get("part")
+                .node(get("part")
                         .url("${baseURL}/api/formueinntekt/skattemelding/utkast/hendelser/?fraSekvensnummer=${fromSequence}&antall=100")
                         .validate(status().success(200).fail(400).fail(404).fail(500))
                         .step(sequence(xpath("/hendelser/hendelse"))

@@ -63,7 +63,7 @@ public class SiriusWorkerTest {
 
     @Test
     public void testPrintConfig() {
-        LOG.info("Config:\n{}", SiriusFlow.get().serialize());
+        LOG.info("Config:\n{}", SiriusFlow.builder().serialize());
 //        LOG.info("Config:\n{}", SiriusFlow.getFlow().end().startNode());
     }
 
@@ -78,7 +78,7 @@ public class SiriusWorkerTest {
         String startPosition = (lastPosition == null ? "1" : lastPosition);
         context.variable("fromSequence", startPosition);
 
-        Flow flow = SiriusFlow.get().end();
+        Flow flow = SiriusFlow.builder().end();
 
         Worker worker = new Worker(flow.startNode(), context);
         worker.run();

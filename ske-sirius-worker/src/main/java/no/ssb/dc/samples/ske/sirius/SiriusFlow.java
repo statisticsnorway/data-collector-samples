@@ -27,6 +27,7 @@ public class SiriusFlow {
         return Flow.start("Collect Sirius", "loop")
                 .configure(
                         context()
+                                .topic("sirius")
                                 .header("accept", "application/xml")
                                 .variable("baseURL", "https://api-at.sits.no")
                 )

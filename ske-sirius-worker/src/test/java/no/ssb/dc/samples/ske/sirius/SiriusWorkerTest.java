@@ -1,7 +1,5 @@
 package no.ssb.dc.samples.ske.sirius;
 
-import no.ssb.config.DynamicConfiguration;
-import no.ssb.config.StoreBasedDynamicConfiguration;
 import no.ssb.dc.api.Builders;
 import no.ssb.dc.api.Flow;
 import no.ssb.dc.api.context.ExecutionContext;
@@ -10,6 +8,7 @@ import no.ssb.dc.core.executor.Worker;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static no.ssb.dc.api.Builders.addContent;
@@ -31,10 +30,6 @@ public class SiriusWorkerTest {
     @Ignore
     @Test
     public void thatWorkerCollectSiriusFlow() throws InterruptedException {
-        DynamicConfiguration configuration = new StoreBasedDynamicConfiguration.Builder()
-                .values("content.store.provider", "discarding")
-                .build();
-
         CompletableFuture<ExecutionContext> future = Worker.newBuilder()
                 .flow(Flow.start("Collect Sirius", "loop")
                         .configure(context()
@@ -76,7 +71,10 @@ public class SiriusWorkerTest {
                                 .url("${baseURL}/api/formueinntekt/skattemelding/utkast/ssb/${year}/${utkastIdentifikator}")
                                 .step(addContent("${position}", "utkastIdentifikator"))
                         ))
-                .configurationMap(configuration.asMap())
+                .configurationMap(Map.of(
+                        "content.store.provider", "rawdata",
+                        "rawdata.client.provider", "memory")
+                )
                 .sslContext(CommonUtils.currentPath(), "certs")
                 .initialPosition("1")
                 .initialPositionVariable("fromSequence")

@@ -84,7 +84,7 @@ public class SiriusWorkerTest {
                 .printExecutionPlan()
                 .printConfiguration()
                 .build()
-                .run();
+                .runAsync();
 
         future.join();
     }

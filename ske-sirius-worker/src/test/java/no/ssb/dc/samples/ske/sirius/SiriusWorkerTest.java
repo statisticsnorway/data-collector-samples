@@ -42,7 +42,7 @@ public class SiriusWorkerTest {
                                 //.variable("fromSequence", "${contentStore.lastPosition(topic) == null ? initialPosition : contentStore.lastPosition(topic)}")
                         )
                         .configure(security()
-                                .sslBundlename("ske-test-certs")
+                                .sslBundleName("ske-test-certs")
                         )
                         .node(paginate("loop")
                                 .variable("fromSequence", "${nextSequence}")

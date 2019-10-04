@@ -1,7 +1,7 @@
 package no.ssb.dc.samples.ske.sirius;
 
 import no.ssb.config.StoreBasedDynamicConfiguration;
-import no.ssb.dc.api.security.SslKeyStore;
+import no.ssb.dc.core.security.SslKeyStore;
 
 import javax.net.ssl.SSLContext;
 import java.nio.file.Path;

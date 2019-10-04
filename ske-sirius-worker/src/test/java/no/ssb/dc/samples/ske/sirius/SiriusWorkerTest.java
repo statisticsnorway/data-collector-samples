@@ -20,6 +20,7 @@ import static no.ssb.dc.api.Builders.nextPage;
 import static no.ssb.dc.api.Builders.paginate;
 import static no.ssb.dc.api.Builders.parallel;
 import static no.ssb.dc.api.Builders.publish;
+import static no.ssb.dc.api.Builders.security;
 import static no.ssb.dc.api.Builders.sequence;
 import static no.ssb.dc.api.Builders.status;
 import static no.ssb.dc.api.Builders.whenVariableIsNull;
@@ -39,6 +40,9 @@ public class SiriusWorkerTest {
                                 .variable("rettighetspakke", "ssb")
                                 .variable("hentAntallMeldingerOmGangen", "100")
                                 //.variable("fromSequence", "${contentStore.lastPosition(topic) == null ? initialPosition : contentStore.lastPosition(topic)}")
+                        )
+                        .configure(security()
+                                .sslBundlename("ske-test-certs")
                         )
                         .node(paginate("loop")
                                 .variable("fromSequence", "${nextSequence}")
@@ -78,7 +82,7 @@ public class SiriusWorkerTest {
                         "content.store.provider", "rawdata",
                         "rawdata.client.provider", "memory")
                 )
-                .sslContext(CommonUtils.currentPath(), "ske-test-certs")
+                .sslContext(CommonUtils.currentPath())
                 .initialPosition("1")
                 .initialPositionVariable("fromSequence")
                 .stopAtNumberOfIterations(1)

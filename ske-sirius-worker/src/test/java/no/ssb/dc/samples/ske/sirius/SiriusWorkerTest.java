@@ -75,7 +75,7 @@ public class SiriusWorkerTest {
                         "content.store.provider", "rawdata",
                         "rawdata.client.provider", "memory")
                 )
-                .sslContext(CommonUtils.currentPath(), "certs")
+                .sslContext(CommonUtils.currentPath(), "ske-test-certs")
                 .initialPosition("1")
                 .initialPositionVariable("fromSequence")
                 .stopAtNumberOfIterations(1)

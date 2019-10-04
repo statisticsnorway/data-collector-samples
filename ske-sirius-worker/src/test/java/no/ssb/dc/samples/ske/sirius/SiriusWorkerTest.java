@@ -82,7 +82,7 @@ public class SiriusWorkerTest {
                         "content.store.provider", "rawdata",
                         "rawdata.client.provider", "memory")
                 )
-                .sslContext(CommonUtils.currentPath())
+                .certificateFactory(CommonUtils.currentPath())
                 .initialPosition("1")
                 .initialPositionVariable("fromSequence")
                 .stopAtNumberOfIterations(1)

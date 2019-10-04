@@ -31,7 +31,9 @@ public class SiriusWorkerTest {
     @Ignore
     @Test
     public void thatWorkerCollectSiriusFlow() throws InterruptedException {
-        DynamicConfiguration configuration = new StoreBasedDynamicConfiguration.Builder().values("content.store.provider", "discarding").build();
+        DynamicConfiguration configuration = new StoreBasedDynamicConfiguration.Builder()
+                .values("content.store.provider", "discarding")
+                .build();
 
         CompletableFuture<ExecutionContext> future = Worker.newBuilder()
                 .flow(Flow.start("Collect Sirius", "loop")
@@ -78,7 +80,7 @@ public class SiriusWorkerTest {
                 .sslContext(CommonUtils.currentPath(), "certs")
                 .initialPosition("1")
                 .initialPositionVariable("fromSequence")
-                .maxNumberOfParallelIterations(1)
+                .stopAtNumberOfIterations(1)
                 .printExecutionPlan()
                 .printConfiguration()
                 .build()

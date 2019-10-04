@@ -85,6 +85,5 @@ public class SiriusWorkerTest {
                 .run();
 
         future.join();
-
     }
 }

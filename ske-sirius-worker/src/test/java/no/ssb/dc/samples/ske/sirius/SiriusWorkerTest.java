@@ -8,10 +8,12 @@ import no.ssb.dc.api.content.ContentStoreInitializer;
 import no.ssb.dc.api.context.ExecutionContext;
 import no.ssb.dc.api.http.Client;
 import no.ssb.dc.api.services.Services;
+import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.executor.BufferedReordering;
 import no.ssb.dc.core.executor.FixedThreadPool;
 import no.ssb.dc.core.executor.Worker;
 import no.ssb.dc.core.handler.ParallelHandler;
+import no.ssb.dc.core.security.CertificateFactory;
 import no.ssb.dc.test.server.TestServer;
 import no.ssb.dc.test.server.TestServerListener;
 import no.ssb.service.provider.api.ProviderConfigurator;
@@ -45,7 +47,8 @@ public class SiriusWorkerTest {
     public void setup() {
         Client.Builder clientBuilder = Client.newClientBuilder();
 
-        SSLContext sslContext = CertsHelper.createSSLContext();
+        CertificateFactory sslFactory = CertificateFactory.create(CommonUtils.currentPath());
+        SSLContext sslContext = sslFactory.getSSLContext("certs");;
         assertNotNull(sslContext);
 
         clientBuilder.sslContext(sslContext);

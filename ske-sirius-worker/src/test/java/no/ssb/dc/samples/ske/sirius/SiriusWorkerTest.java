@@ -69,6 +69,7 @@ public class SiriusWorkerTest {
                         )
                         .node(Builders.get("utkast-melding")
                                 .url("${baseURL}/api/formueinntekt/skattemelding/utkast/ssb/${year}/${utkastIdentifikator}")
+                                .validate(status().success(200).fail(400).fail(404).fail(500))
                                 .step(addContent("${position}", "utkastIdentifikator"))
                         ))
                 .configurationMap(Map.of(

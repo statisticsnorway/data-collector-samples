@@ -47,7 +47,7 @@ public class SiriusWorkerTest {
     public void setup() {
         Client.Builder clientBuilder = Client.newClientBuilder();
 
-        CertificateFactory sslFactory = CertificateFactory.create(CommonUtils.currentPath());
+        CertificateFactory sslFactory = CertificateFactory.scanAndCreate(CommonUtils.currentPath());
         SSLContext sslContext = sslFactory.getSSLContext("certs");;
         assertNotNull(sslContext);
 

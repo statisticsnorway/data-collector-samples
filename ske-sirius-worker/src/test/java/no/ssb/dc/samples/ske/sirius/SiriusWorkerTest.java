@@ -34,7 +34,7 @@ public class SiriusWorkerTest {
                 .certificateFactory(CommonUtils.currentPath())
                 .initialPosition("1")
                 .initialPositionVariable("fromSequence")
-                .stopAtNumberOfIterations(5)
+                //.stopAtNumberOfIterations(5)
                 .printExecutionPlan()
                 .printConfiguration()
                 .configurationMap(Map.of(

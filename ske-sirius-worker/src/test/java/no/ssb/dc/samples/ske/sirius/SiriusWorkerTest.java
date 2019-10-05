@@ -31,6 +31,12 @@ public class SiriusWorkerTest {
     @Test
     public void thatWorkerCollectSiriusData() throws InterruptedException {
         CompletableFuture<ExecutionContext> future = Worker.newBuilder()
+                .certificateFactory(CommonUtils.currentPath())
+                .initialPosition("1")
+                .initialPositionVariable("fromSequence")
+                .stopAtNumberOfIterations(5)
+                .printExecutionPlan()
+                .printConfiguration()
                 .flow(Flow.start("Collect Sirius", "loop")
                         .configure(context()
                                 .topic("sirius")
@@ -81,12 +87,6 @@ public class SiriusWorkerTest {
                         "content.store.provider", "rawdata",
                         "rawdata.client.provider", "memory")
                 )
-                .certificateFactory(CommonUtils.currentPath())
-                .initialPosition("1")
-                .initialPositionVariable("fromSequence")
-                .stopAtNumberOfIterations(5)
-                .printExecutionPlan()
-                .printConfiguration()
                 .build()
                 .runAsync();
 

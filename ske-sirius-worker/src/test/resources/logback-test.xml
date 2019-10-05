@@ -14,6 +14,7 @@
     <logger name="no.ssb.dc.content" level="TRACE"/>
     <logger name="no.ssb.dc.content.DiscardingContentStore" level="NONE"/>
     <logger name="no.ssb.dc.content.DiscardingContentStreamBuffer" level="NONE"/>
+    <logger name="no.ssb.dc.core.handler.PublishHandler" level="NONE"/>
     <logger name="no.ssb.rawdata.api" level="TRACE"/>
 
     <root level="INFO">

@@ -3,7 +3,6 @@ package no.ssb.dc.samples.ske.sirius;
 import no.ssb.dc.api.Flow;
 import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.executor.Worker;
-import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 import java.util.Map;
@@ -25,16 +24,16 @@ import static no.ssb.dc.api.Builders.xpath;
 
 public class SiriusWorkerTest {
 
-    @Ignore
+//    @Ignore
     @Test
     public void thatWorkerCollectSiriusData() throws InterruptedException {
         Worker.newBuilder()
-                .configurationMap(Map.of(
+                .configuration(Map.of(
                         "content.store.provider", "rawdata",
                         "rawdata.client.provider", "memory",
                         "data.collector.worker.threads", "50")
                 )
-                .certificateFactory(CommonUtils.currentPath())
+                .buildCertificateFactory(CommonUtils.currentPath())
                 //.stopAtNumberOfIterations(5)
                 .printConfiguration()
                 .printExecutionPlan()

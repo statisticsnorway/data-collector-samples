@@ -37,6 +37,10 @@ public class SiriusWorkerTest {
                 .stopAtNumberOfIterations(5)
                 .printExecutionPlan()
                 .printConfiguration()
+                .configurationMap(Map.of(
+                        "content.store.provider", "rawdata",
+                        "rawdata.client.provider", "memory")
+                )
                 .flow(Flow.start("Collect Sirius", "loop")
                         .configure(context()
                                 .topic("sirius")
@@ -83,10 +87,6 @@ public class SiriusWorkerTest {
                                 .validate(status().success(200).fail(400).fail(404).fail(500))
                                 .step(addContent("${position}", "utkastSkatteMelding"))
                         ))
-                .configurationMap(Map.of(
-                        "content.store.provider", "rawdata",
-                        "rawdata.client.provider", "memory")
-                )
                 .build()
                 .runAsync();
 

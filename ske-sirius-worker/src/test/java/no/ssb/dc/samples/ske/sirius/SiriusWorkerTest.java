@@ -1,11 +1,9 @@
 package no.ssb.dc.samples.ske.sirius;
 
-import no.ssb.dc.api.Builders;
 import no.ssb.dc.api.Flow;
 import no.ssb.dc.api.context.ExecutionContext;
 import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.executor.Worker;
-import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 import java.util.Map;
@@ -28,9 +26,9 @@ import static no.ssb.dc.api.Builders.xpath;
 
 public class SiriusWorkerTest {
 
-    @Ignore
+//    @Ignore
     @Test
-    public void thatWorkerCollectSiriusFlow() throws InterruptedException {
+    public void thatWorkerCollectSiriusData() throws InterruptedException {
         CompletableFuture<ExecutionContext> future = Worker.newBuilder()
                 .flow(Flow.start("Collect Sirius", "loop")
                         .configure(context()
@@ -73,10 +71,10 @@ public class SiriusWorkerTest {
                                 )
                                 .returnVariables("nextSequence")
                         )
-                        .node(Builders.get("utkast-melding")
+                        .node(get("utkast-melding")
                                 .url("${baseURL}/api/formueinntekt/skattemelding/utkast/${rettighetspakke}/${year}/${utkastIdentifikator}")
                                 .validate(status().success(200).fail(400).fail(404).fail(500))
-                                .step(addContent("${position}", "utkastIdentifikator"))
+                                .step(addContent("${position}", "utkastSkatteMelding"))
                         ))
                 .configurationMap(Map.of(
                         "content.store.provider", "rawdata",
@@ -85,7 +83,7 @@ public class SiriusWorkerTest {
                 .certificateFactory(CommonUtils.currentPath())
                 .initialPosition("1")
                 .initialPositionVariable("fromSequence")
-                .stopAtNumberOfIterations(1)
+                .stopAtNumberOfIterations(5)
                 .printExecutionPlan()
                 .printConfiguration()
                 .build()

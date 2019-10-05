@@ -1,14 +1,12 @@
 package no.ssb.dc.samples.ske.sirius;
 
 import no.ssb.dc.api.Flow;
-import no.ssb.dc.api.context.ExecutionContext;
 import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.executor.Worker;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import static no.ssb.dc.api.Builders.addContent;
 import static no.ssb.dc.api.Builders.context;
@@ -30,7 +28,7 @@ public class SiriusWorkerTest {
     @Ignore
     @Test
     public void thatWorkerCollectSiriusData() throws InterruptedException {
-        CompletableFuture<ExecutionContext> future = Worker.newBuilder()
+        Worker.newBuilder()
                 .certificateFactory(CommonUtils.currentPath())
                 .initialPosition("1")
                 .initialPositionVariable("fromSequence")
@@ -88,8 +86,6 @@ public class SiriusWorkerTest {
                                 .step(addContent("${position}", "utkastSkatteMelding"))
                         ))
                 .build()
-                .runAsync();
-
-        future.join();
+                .run();
     }
 }

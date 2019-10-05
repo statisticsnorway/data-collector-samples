@@ -29,16 +29,14 @@ public class SiriusWorkerTest {
     @Test
     public void thatWorkerCollectSiriusData() throws InterruptedException {
         Worker.newBuilder()
-                .certificateFactory(CommonUtils.currentPath())
-                .initialPosition("1")
-                .initialPositionVariable("fromSequence")
-                //.stopAtNumberOfIterations(5)
-                .printExecutionPlan()
-                .printConfiguration()
                 .configurationMap(Map.of(
                         "content.store.provider", "rawdata",
                         "rawdata.client.provider", "memory")
                 )
+                .certificateFactory(CommonUtils.currentPath())
+                //.stopAtNumberOfIterations(5)
+                .printConfiguration()
+                .printExecutionPlan()
                 .flow(Flow.start("Collect Sirius", "loop")
                         .configure(context()
                                 .topic("sirius")
@@ -46,6 +44,7 @@ public class SiriusWorkerTest {
                                 .variable("baseURL", "https://api-at.sits.no")
                                 .variable("rettighetspakke", "ssb")
                                 .variable("hentAntallMeldingerOmGangen", "100")
+                                .variable("fromSequence", "1")
                                 //.variable("fromSequence", "${contentStore.lastPosition(topic) == null ? initialPosition : contentStore.lastPosition(topic)}")
                         )
                         .configure(security()

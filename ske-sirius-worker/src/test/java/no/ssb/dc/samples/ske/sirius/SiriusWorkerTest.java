@@ -3,6 +3,7 @@ package no.ssb.dc.samples.ske.sirius;
 import no.ssb.dc.api.Schema;
 import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.executor.Worker;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 import java.util.Map;
@@ -22,9 +23,10 @@ import static no.ssb.dc.api.Builders.status;
 import static no.ssb.dc.api.Builders.whenVariableIsNull;
 import static no.ssb.dc.api.Builders.xpath;
 
+// https://skatteetaten.github.io/datasamarbeid-api-dokumentasjon/reference_skattemelding
 public class SiriusWorkerTest {
 
-//    @Ignore
+    @Ignore
     @Test
     public void thatWorkerCollectSiriusData() throws InterruptedException {
         Worker.newBuilder()
@@ -45,6 +47,8 @@ public class SiriusWorkerTest {
                                 .variable("rettighetspakke", "ssb")
                                 .variable("hentAntallMeldingerOmGangen", "100")
                                 .variable("fromSequence", "1")
+                                .variable("hendelse", "utkast")
+                                //.variable("hendelse", "fastsatt")
                                 //.variable("fromSequence", "${contentStore.lastPosition(topic) == null ? initialPosition : contentStore.lastPosition(topic)}")
                         )
                         .configure(security()
@@ -80,7 +84,7 @@ public class SiriusWorkerTest {
                                 .returnVariables("nextSequence")
                         )
                         .call(get("utkast-melding")
-                                .url("${baseURL}/api/formueinntekt/skattemelding/utkast/${rettighetspakke}/${year}/${utkastIdentifikator}")
+                                .url("${baseURL}/api/formueinntekt/skattemelding/${hendelse}/${rettighetspakke}/${year}/${utkastIdentifikator}")
                                 .validate(status().success(200).fail(400).fail(404).fail(500))
                                 .pipe(addContent("${position}", "utkastSkatteMelding"))
                         ))

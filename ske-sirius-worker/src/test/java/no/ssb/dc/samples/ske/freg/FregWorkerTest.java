@@ -60,7 +60,7 @@ public class FregWorkerTest {
                 //.stopAtNumberOfIterations(5)
                 .flow(Flow.start("Collect FREG", "loop")
                         .configure(context()
-                                .topic("sirius")
+                                .topic("freg")
                                 .header("accept", "application/xml")
                                 .variable("ProdusentTestURL", "https://folkeregisteret-api-ekstern.sits.no")
                                 .variable("KonsumentTestURL", "https://folkeregisteret-api-konsument.sits.no")

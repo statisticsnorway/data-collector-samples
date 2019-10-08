@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+    <title>Hendelse</title>
+    <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:1</id>
+    <updated>2019-05-16T09:34:55.955Z</updated>
+    <content type="application/xml">
+        <ns2:lagretHendelse>
+            <ns2:sekvensnummer>1</ns2:sekvensnummer>
+            <ns2:hendelse>
+                <ns2:folkeregisteridentifikator>05041950570</ns2:folkeregisteridentifikator>
+                <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                <ns2:hendelsesdokument>55591b51b20518f4f22bf1edd6aa9f25</ns2:hendelsesdokument>
+                <ns2:persondokument>eae5542062167eedc4389ec1339fa63d</ns2:persondokument>
+                <ns2:ajourholdstidspunkt>2019-04-23T09:55:54+02:00</ns2:ajourholdstidspunkt>
+            </ns2:hendelse>
+        </ns2:lagretHendelse>
+    </content>
+</entry>

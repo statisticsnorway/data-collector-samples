@@ -1,5 +1,7 @@
 package no.ssb.dc.samples.ske.freg;
 
+import no.ssb.config.DynamicConfiguration;
+import no.ssb.config.StoreBasedDynamicConfiguration;
 import no.ssb.dc.api.Flow;
 import no.ssb.dc.api.node.builder.XPathBuilder;
 import no.ssb.dc.api.util.CommonUtils;
@@ -7,8 +9,6 @@ import no.ssb.dc.core.executor.Worker;
 import no.ssb.dc.core.handler.Queries;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
-
-import java.util.Map;
 
 import static no.ssb.dc.api.Builders.addContent;
 import static no.ssb.dc.api.Builders.context;
@@ -40,12 +40,22 @@ public class FregWorkerTest {
     @Ignore
     @Test
     public void thatWorkerCollectSiriusData() {
+        DynamicConfiguration configuration = new StoreBasedDynamicConfiguration.Builder()
+                .values("content.store.provider", "rawdata")
+                .values("rawdata.client.provider", "postgres")
+                .values("data.collector.worker.threads", "50")
+                .values("postgres.driver.host", "localhost")
+                .values("postgres.driver.port", "5432")
+                .values("postgres.driver.user", "rdc")
+                .values("postgres.driver.password", "rdc")
+                .values("postgres.driver.database", "rdc")
+                .values("postgres.recreate-database", "false")
+                .values("rawdata.postgres.consumer.prefetch-size", "100")
+                .values("rawdata.postgres.consumer.prefetch-poll-interval-when-empty", "1000")
+                .build();
+
         Worker.newBuilder()
-                .configuration(Map.of(
-                        "content.store.provider", "rawdata",
-                        "rawdata.client.provider", "memory",
-                        "data.collector.worker.threads", "50")
-                )
+                .configuration(configuration.asMap())
                 .buildCertificateFactory(CommonUtils.currentPath())
                 //.stopAtNumberOfIterations(5)
                 .flow(Flow.start("Collect FREG", "loop")

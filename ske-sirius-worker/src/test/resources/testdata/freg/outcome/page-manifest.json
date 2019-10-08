@@ -1,0 +1,31 @@
+[
+  {
+    "metadata": {
+      "resource-type": "page",
+      "correlation-id": "016dabf3-7791-0000-0000-000000000001",
+      "url": "https://folkeregisteret-api-konsument-playground.sits.no/folkeregisteret/offentlig-med-hjemmel/api/v1/hendelser/feed/?seq=1",
+      "topic": "sirius-pages",
+      "position": "016dabf3-7791-0000-0000-000000000001",
+      "content-key": "page",
+      "content-type": "application/atom+xml",
+      "content-length": 918298,
+      "request-duration-nano-time": 834315055
+    },
+    "http-info": {
+      "request-headers": {
+        "accept": "application/xml"
+      },
+      "response-headers": {
+        "cache-control": "private",
+        "connection": "close",
+        "content-type": "application/atom+xml",
+        "date": "Tue, 08 Oct 2019 15:18:43 GMT",
+        "etag": "\"375454d63d31fbc1006085e50229f9ad30690618c649ce3811471fc4f8a34c5d22221da009e15c82e415ce956b1f27b3f05ed6bf7a115c95b4b244436ecac555\"",
+        "expires": "Thu, 01 Dec 1994 16:00:00 GMT",
+        "set-cookie": "eab765b9f2b2bba8fa9dd305c7ab4378=814561bef31e71fe87005014e1ed38ce; path=/; HttpOnly;Secure,MRHSession=95893b0b09b1134b97836c71587a7e5c;path=/;secure",
+        "strict-transport-security": "max-age=16070400; includeSubDomains",
+        "transfer-encoding": "chunked"
+      }
+    }
+  }
+]

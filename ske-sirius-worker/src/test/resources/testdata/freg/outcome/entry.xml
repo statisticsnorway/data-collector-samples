@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+    <title>Hendelse</title>
+    <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:110</id>
+    <updated>2019-05-16T09:37:53.22Z</updated>
+    <content type="application/xml">
+        <ns2:lagretHendelse>
+            <ns2:sekvensnummer>110</ns2:sekvensnummer>
+            <ns2:hendelse>
+                <ns2:folkeregisteridentifikator>03108500319</ns2:folkeregisteridentifikator>
+                <ns2:hendelsetype>personErDoed</ns2:hendelsetype>
+                <ns2:hendelsesdokument>0de1938e5086963566a92e5975867ee0</ns2:hendelsesdokument>
+                <ns2:persondokument>8bad51e82f45c2ae908c6380b43a0470</ns2:persondokument>
+                <ns2:ajourholdstidspunkt>2019-04-23T10:09:55+02:00</ns2:ajourholdstidspunkt>
+            </ns2:hendelse>
+        </ns2:lagretHendelse>
+    </content>
+</entry>

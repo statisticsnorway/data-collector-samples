@@ -1,0 +1,663 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>
+        http://folkeregisteret-api-konsument-playground.sits.no/folkeregisteret/offentlig-med-hjemmel/api/v1/hendelser/feed
+    </id>
+    <title>Offentlig hendelsesliste</title>
+    <author>
+        <name>Skatteetaten</name>
+    </author>
+    <link rel='self' type='application/atom+xml'
+          href='http://folkeregisteret-api-konsument-playground.sits.no/folkeregisteret/offentlig-med-hjemmel/api/v1/hendelser/feed?seq=1'/>
+    <link rel='first' type='application/atom+xml'
+          href='http://folkeregisteret-api-konsument-playground.sits.no/folkeregisteret/offentlig-med-hjemmel/api/v1/hendelser/feed?seq=0'/>
+    <link rel='next' type='application/atom+xml'
+          href='http://folkeregisteret-api-konsument-playground.sits.no/folkeregisteret/offentlig-med-hjemmel/api/v1/hendelser/feed?seq=1001'/>
+    <updated>2019-10-08T07:58:23.194Z</updated>
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:1</id>
+        <updated>2019-05-16T09:34:55.955Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>1</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>05041950570</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>55591b51b20518f4f22bf1edd6aa9f25</ns2:hendelsesdokument>
+                    <ns2:persondokument>eae5542062167eedc4389ec1339fa63d</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:55:54+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:2</id>
+        <updated>2019-05-16T09:35:44.007Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>2</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>18024901595</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErViderefoertSomGjeldendeVedSammenslaaing</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>1120bea688fb14a292c244592a1aed76</ns2:hendelsesdokument>
+                    <ns2:persondokument>7d976a4ca513075fb82bee05d8356d39</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:56:12+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:3</id>
+        <updated>2019-05-16T09:36:10.986Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>3</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>20127500577</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpphoertSomDublett</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>933bf86b1841bab88ec716267d97878a</ns2:hendelsesdokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:56:12+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:4</id>
+        <updated>2019-05-16T09:36:38.344Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>4</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>05048300296</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>eb73af9403b0f5702e802ad4f9b8ca4e</ns2:hendelsesdokument>
+                    <ns2:persondokument>f75f60ad62d05b76d24a4aab404418bc</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:56:22+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:5</id>
+        <updated>2019-05-16T09:37:02.498Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>5</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>04022801339</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>endringIIdentitetsgrunnlag</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>d1428661e6f2c5c158bf954facdd3ba2</ns2:hendelsesdokument>
+                    <ns2:persondokument>24156fe70a832805e533a785e3618e51</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:56:31.047+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:6</id>
+        <updated>2019-05-16T09:37:03.926Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>6</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>16040400110</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>c0e054f025e56d63b14f91fbb5abcb95</ns2:hendelsesdokument>
+                    <ns2:persondokument>9d2f189b0040db693e4104e962081022</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:56:33+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:7</id>
+        <updated>2019-05-16T09:37:05.164Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>7</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>08040102419</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErUtflyttet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>0ffaffc0df1677ab7367b92fee2559d6</ns2:hendelsesdokument>
+                    <ns2:persondokument>dd68f4cab38a2bf343c6535cdcc7170a</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:56:46+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:8</id>
+        <updated>2019-05-16T09:37:06.369Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>8</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>21110150145</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>625d2dd36519fd4c320501243332cec4</ns2:hendelsesdokument>
+                    <ns2:persondokument>5e7f95353d158ed544a95b983bafb15b</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:57:08+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:9</id>
+        <updated>2019-05-16T09:37:29.079Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>9</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>23085100203</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>eb77c3863a723342965b9113f4da1510</ns2:hendelsesdokument>
+                    <ns2:persondokument>b3102cb8ea1163f8b7f3c7f814bf4d4e</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:57:22+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:10</id>
+        <updated>2019-05-16T09:37:29.133Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>10</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>09041950274</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>2ca8857fbd0c8edbef8f9f5e4515e1bd</ns2:hendelsesdokument>
+                    <ns2:persondokument>41aea45417dbba76b8d3d920bc6463cb</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:57:28+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:11</id>
+        <updated>2019-05-16T09:37:29.159Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>11</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>20108600102</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>09578bc3d3b83ba8d7ea4de8f69d627a</ns2:hendelsesdokument>
+                    <ns2:persondokument>c89a54231a3fff6e1c79fa180ccc2b37</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:57:35+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:12</id>
+        <updated>2019-05-16T09:37:29.184Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>12</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>27110650073</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>4c99a484cc44b0c3a25ed8dbb40e7315</ns2:hendelsesdokument>
+                    <ns2:persondokument>4b4c97aab85c7b91630e984850e09558</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:57:35+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:13</id>
+        <updated>2019-05-16T09:37:29.224Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>13</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>07028300284</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>1e07861ca0b51f2949a17c95091f4f46</ns2:hendelsesdokument>
+                    <ns2:persondokument>882221c0b587d51d39c3eb7ed2affb70</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:57:56+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:14</id>
+        <updated>2019-05-16T09:37:29.259Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>14</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>17040650105</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>87dab326e0ce453b1e4edc24de9bdf39</ns2:hendelsesdokument>
+                    <ns2:persondokument>04068e708c2125c881e12e611ef918fe</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:57:56+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:15</id>
+        <updated>2019-05-16T09:37:29.298Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>15</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>05045901515</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErDoed</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>4b3bec0672c5f8c42aec574968ae0568</ns2:hendelsesdokument>
+                    <ns2:persondokument>f0b3a7a98ed44f39d7241965da0c7657</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:58:10+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:16</id>
+        <updated>2019-05-16T09:37:29.347Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>16</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>08105800372</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErDoed</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>b525f5fb5ae492e8a8170bb184e328c5</ns2:hendelsesdokument>
+                    <ns2:persondokument>e074de29832102fa1e8013988b3a531a</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:58:17+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:17</id>
+        <updated>2019-05-16T09:37:29.391Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>17</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>17112700137</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>74637d36df3f13aceb9443df735214f9</ns2:hendelsesdokument>
+                    <ns2:persondokument>0da0ecf7c0f0119377bbc947c2ffb24d</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:58:23+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:18</id>
+        <updated>2019-05-16T09:37:29.428Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>18</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>25031957934</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>0a3c11170d4017ee98e2b45c925a8247</ns2:hendelsesdokument>
+                    <ns2:persondokument>84271310b792a77c42ff683bdda27dc4</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:58:33+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:19</id>
+        <updated>2019-05-16T09:37:29.459Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>19</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>23061650067</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>16d96852607b381b25efece22f9ce1a7</ns2:hendelsesdokument>
+                    <ns2:persondokument>55c4381cc0958d8306cc30d0ff799b4d</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:58:37+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:20</id>
+        <updated>2019-05-16T09:37:29.5Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>20</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>11031150134</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>d875778c0091f117016003104014d615</ns2:hendelsesdokument>
+                    <ns2:persondokument>49f7289a80227b3f77bd65cf85494481</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:58:45+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:21</id>
+        <updated>2019-05-16T09:37:29.542Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>21</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>02101250191</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>9f7918eeb80e2064d51ac3b34ce9ac8e</ns2:hendelsesdokument>
+                    <ns2:persondokument>0e195a49361679596877df422f63bd42</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:58:54+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:22</id>
+        <updated>2019-05-16T09:37:29.59Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>22</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>19029100139</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>d8fc768947dd32107ec62c375871237b</ns2:hendelsesdokument>
+                    <ns2:persondokument>f5e60bce73e7b59928ec9c6c67698716</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:59:02+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:23</id>
+        <updated>2019-05-16T09:37:29.619Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>23</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>10021750110</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>f140229d51e7141f5a6f18acde2e1db4</ns2:hendelsesdokument>
+                    <ns2:persondokument>9f7deae9b4e41d6c4a1252c9c7d40334</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:59:02+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:24</id>
+        <updated>2019-05-16T09:37:29.647Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>24</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>02108400288</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>b7f320c9bd463d34e59ed029301e53a4</ns2:hendelsesdokument>
+                    <ns2:persondokument>1a18dd802c817af7f0c344716056a169</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:59:21+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:25</id>
+        <updated>2019-05-16T09:37:29.704Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>25</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>41100449933</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>6dcf7b0de30c5808f2af98ca8305b4f3</ns2:hendelsesdokument>
+                    <ns2:persondokument>07ea68bd3e40b948ba233cbe14516a5f</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:59:30.344+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:26</id>
+        <updated>2019-05-16T09:37:29.731Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>26</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>10091350187</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>d912d38213139daef49b1dfef6a8c93d</ns2:hendelsesdokument>
+                    <ns2:persondokument>e0542c5ea80105034dc6f2381d08fbf0</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:59:37+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:27</id>
+        <updated>2019-05-16T09:37:29.775Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>27</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>03095700348</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErDoed</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>cf0dcb8262a9e5c1cb58933982f5e9f2</ns2:hendelsesdokument>
+                    <ns2:persondokument>d6f39a2a910758d517d5dc9a5e54c367</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:59:55+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:28</id>
+        <updated>2019-05-16T09:37:29.8Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>28</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>23024900282</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>897864751adfd3ef7de97159ff8fc3e4</ns2:hendelsesdokument>
+                    <ns2:persondokument>8debc9690bd56d6eaf014601481dfdd6</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:59:59+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:29</id>
+        <updated>2019-05-16T09:37:29.823Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>29</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>29060050048</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>b11d41153b7c0ba0277f0801193e9458</ns2:hendelsesdokument>
+                    <ns2:persondokument>bf750060be3495142e631c59da09cb64</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T09:59:59+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:30</id>
+        <updated>2019-05-16T09:37:29.861Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>30</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>06046000216</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>17203648f1ef08fedea0fe860e095ead</ns2:hendelsesdokument>
+                    <ns2:persondokument>bcf1f2b9d2f89283f8c8a03d13f3bde3</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T10:00:11+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:31</id>
+        <updated>2019-05-16T09:37:29.89Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>31</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>09086900251</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>d343ada59e0daebe7e889484666e7980</ns2:hendelsesdokument>
+                    <ns2:persondokument>8f15a932d4af4b6e3d47f26e259e0094</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T10:00:20+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:32</id>
+        <updated>2019-05-16T09:37:29.928Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>32</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>26085700307</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>92b9785eb9da35d7728ceae0fb0f08ed</ns2:hendelsesdokument>
+                    <ns2:persondokument>d05c926a690e4a923a653322ece32031</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T10:00:28+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:33</id>
+        <updated>2019-05-16T09:37:29.963Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>33</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>12031150173</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>5cbcce787dfa46ccec4158efca6f914a</ns2:hendelsesdokument>
+                    <ns2:persondokument>7927b3a6db03b785dee5759b8dd55934</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T10:00:28+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:34</id>
+        <updated>2019-05-16T09:37:29.989Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>34</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>27068000152</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>f055b05f5c6027ebae79182e95722398</ns2:hendelsesdokument>
+                    <ns2:persondokument>9e97a5ab17a92e210135c0baf51a8561</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T10:00:39+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:35</id>
+        <updated>2019-05-16T09:37:30.021Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>35</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>17110850034</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>6a950e739177ddad19cf4fbbc3e44619</ns2:hendelsesdokument>
+                    <ns2:persondokument>50da1b0938166f7d5c0195f2168bf6b2</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T10:00:39+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+
+    <entry xmlns:ns2="folkeregisteret:tilgjengeliggjoering:hendelse:v1">
+        <title>Hendelse</title>
+        <id>tag:skatteetaten.no,2019-05-16:folkeregisteret:tilgjengeliggjoering:hendelse:v1:36</id>
+        <updated>2019-05-16T09:37:30.051Z</updated>
+        <content type="application/xml">
+            <ns2:lagretHendelse>
+                <ns2:sekvensnummer>36</ns2:sekvensnummer>
+                <ns2:hendelse>
+                    <ns2:folkeregisteridentifikator>16128000120</ns2:folkeregisteridentifikator>
+                    <ns2:hendelsetype>personErOpprettet</ns2:hendelsetype>
+                    <ns2:hendelsesdokument>a56e889f673557a25f3fff3bcc0acd62</ns2:hendelsesdokument>
+                    <ns2:persondokument>faf5e6a32d39484eefa577ad3cd0ccf2</ns2:persondokument>
+                    <ns2:ajourholdstidspunkt>2019-04-23T10:00:53+02:00</ns2:ajourholdstidspunkt>
+                </ns2:hendelse>
+            </ns2:lagretHendelse>
+        </content>
+    </entry>
+</feed>

@@ -57,7 +57,7 @@ public class SiriusWorkerTest {
                                 .variable("fromSequence", "${nextSequence}")
                                 .addPageContent()
                                 .iterate(execute("parts"))
-                                .prefetchThreshold(5)
+                                .prefetchThreshold(25)
                                 .until(whenVariableIsNull("nextSequence"))
                         )
                         .function(get("parts")

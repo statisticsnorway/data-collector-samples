@@ -158,7 +158,8 @@
                 <version>2.20</version>
                 <!-- workaround for: https://issues.jboss.org/browse/UNDERTOW-1355 -->
                 <configuration>
-                    <argLine>
+                       <argLine>
+                        ${argLine}
                         --illegal-access=deny
                         -Xmx1500m
                     </argLine>

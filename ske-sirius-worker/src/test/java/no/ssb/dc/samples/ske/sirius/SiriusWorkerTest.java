@@ -3,6 +3,7 @@ package no.ssb.dc.samples.ske.sirius;
 import no.ssb.dc.api.Flow;
 import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.executor.Worker;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 import java.util.Map;
@@ -25,7 +26,7 @@ import static no.ssb.dc.api.Builders.xpath;
 // https://skatteetaten.github.io/datasamarbeid-api-dokumentasjon/reference_skattemelding
 public class SiriusWorkerTest {
 
-//    @Ignore
+    @Ignore
     @Test
     public void thatWorkerCollectSiriusData() throws InterruptedException {
         Worker.newBuilder()

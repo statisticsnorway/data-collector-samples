@@ -1,0 +1,59 @@
+[
+  {
+    "metadata": {
+      "resource-type": "entry",
+      "correlation-id": "016dafc4-968b-9acc-90ec-7587362bb6d6,016dafc4-99e3-0000-0000-000000000001",
+      "url": "https://api-at.sits.no/api/formueinntekt/skattemelding/utkast/hendelser/?fraSekvensnummer=1&antall=100",
+      "topic": "sirius",
+      "position": "1",
+      "content-key": "entry",
+      "content-type": "application/xml;charset=UTF-8",
+      "content-length": 186,
+      "request-duration-nano-time": 448860664
+    },
+    "http-info": {
+      "request-headers": {
+        "accept": "application/xml"
+      },
+      "response-headers": {
+        "cache-control": "private",
+        "content-type": "application/xml;charset=UTF-8",
+        "date": "Wed, 09 Oct 2019 09:05:59 GMT",
+        "expires": "Thu, 01 Dec 1994 16:00:00 GMT",
+        "korrelasjonsid": "c7ae9c90-054d-4028-6b27-f7bd01907af6",
+        "set-cookie": "7215bd416b7eca4e885e0facd430b342=ea3c6cfc36714ceef25a9d153f0b7dab; path=/; HttpOnly;Secure,MRHSession=b71277e3d1ba24af3a00003489ebc2ce;path=/;secure",
+        "strict-transport-security": "max-age=16070400; includeSubDomains",
+        "transfer-encoding": "chunked",
+        "vary": "Accept-Encoding, User-Agent"
+      }
+    }
+  },
+  {
+    "metadata": {
+      "resource-type": "document",
+      "correlation-id": "016dafc4-968b-9acc-90ec-7587362bb6d6,016dafc4-99e3-0000-0000-000000000001",
+      "url": "https://api-at.sits.no/api/formueinntekt/skattemelding/utkast/ssb/2018/05048149709",
+      "topic": "sirius",
+      "position": "1",
+      "content-key": "skattemelding",
+      "content-type": "application/xml;charset=UTF-8",
+      "content-length": 658,
+      "request-duration-nano-time": 839452874
+    },
+    "http-info": {
+      "request-headers": {
+        "accept": "application/xml"
+      },
+      "response-headers": {
+        "cache-control": "private",
+        "content-type": "application/xml;charset=UTF-8",
+        "date": "Wed, 09 Oct 2019 09:06:01 GMT",
+        "expires": "Thu, 01 Dec 1994 16:00:00 GMT",
+        "korrelasjonsid": "ef2b32f9-6e56-b726-b796-238e46174c9c",
+        "set-cookie": "efd51c3de3e16374987ca1acc6fec5af=c7dcacbe1230500992387f6ad8360bbe; path=/; HttpOnly;Secure,MRHSession=332ca6bf46af478e6bd9b10b878e1e6e;path=/;secure",
+        "strict-transport-security": "max-age=16070400; includeSubDomains",
+        "transfer-encoding": "chunked"
+      }
+    }
+  }
+]

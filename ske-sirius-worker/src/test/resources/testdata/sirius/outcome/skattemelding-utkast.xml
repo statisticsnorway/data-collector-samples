@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<skattemeldingUtflatet xmlns="urn:no:skatteetaten:datasamarbeid:skattemeldingutflatet:v1">
+    <konto>
+        <kontonummer>50588602564</kontonummer>
+        <organisasjonsnummer>999900000</organisasjonsnummer>
+        <bankensNavn>Bedrift test 00000 AS</bankensNavn>
+        <innskudd>2710141</innskudd>
+        <opptjenteRenter>319864</opptjenteRenter>
+    </konto>
+    <skyldigRestskatt>
+        <betalteForsinkelsesrenterForSamletSkyldigRestskatt>116000</betalteForsinkelsesrenterForSamletSkyldigRestskatt>
+        <samletSkyldigRestskatt>1200000</samletSkyldigRestskatt>
+    </skyldigRestskatt>
+    <personidentifikator>05048149709</personidentifikator>
+    <skjermet>false</skjermet>
+</skattemeldingUtflatet>

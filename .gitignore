@@ -43,4 +43,6 @@ dependency-reduced-pom.xml
 **/target
 
 **/*certs
+**/*certs.zip
+**/*certs.tgz
 

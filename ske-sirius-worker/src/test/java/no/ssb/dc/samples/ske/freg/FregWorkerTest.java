@@ -1,7 +1,7 @@
 package no.ssb.dc.samples.ske.freg;
 
 import no.ssb.config.StoreBasedDynamicConfiguration;
-import no.ssb.dc.api.Flow;
+import no.ssb.dc.api.Specification;
 import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.executor.Worker;
 import org.testng.annotations.Ignore;
@@ -31,8 +31,8 @@ public class FregWorkerTest {
         Worker.newBuilder()
                 .configuration(new StoreBasedDynamicConfiguration.Builder()
                         .values("content.store.provider", "rawdata")
-                        .values("rawdata.client.provider", "postgres")
-                        .values("data.collector.worker.threads", "300")
+                        .values("rawdata.client.provider", "memory")
+                        .values("data.collector.worker.threads", "75")
                         .values("postgres.driver.host", "localhost")
                         .values("postgres.driver.port", "5432")
                         .values("postgres.driver.user", "rdc")
@@ -45,7 +45,8 @@ public class FregWorkerTest {
                         .asMap())
                 .buildCertificateFactory(CommonUtils.currentPath())
                 //.stopAtNumberOfIterations(5)
-                .flow(Flow.start("Collect FREG", "loop")
+                .printConfiguration()
+                .specification(Specification.start("Collect FREG", "loop")
                         .configure(context()
                                 .topic("freg")
                                 .header("accept", "application/xml")
@@ -62,7 +63,7 @@ public class FregWorkerTest {
                                 .variable("fromSequence", "${nextSequence}")
                                 .addPageContent()
                                 .iterate(execute("event-list"))
-                                .prefetchThreshold(2500)
+                                .prefetchThreshold(1500)
                                 .until(whenVariableIsNull("nextSequence"))
                         )
                         .function(get("event-list")

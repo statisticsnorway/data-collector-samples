@@ -1,12 +1,11 @@
 package no.ssb.dc.samples.ske.sirius;
 
-import no.ssb.dc.api.Flow;
+import no.ssb.config.StoreBasedDynamicConfiguration;
+import no.ssb.dc.api.Specification;
 import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.executor.Worker;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
-
-import java.util.Map;
 
 import static no.ssb.dc.api.Builders.addContent;
 import static no.ssb.dc.api.Builders.context;
@@ -30,25 +29,34 @@ public class SiriusWorkerTest {
     @Test
     public void thatWorkerCollectSiriusData() throws InterruptedException {
         Worker.newBuilder()
-                .configuration(Map.of(
-                        "content.store.provider", "rawdata",
-                        "rawdata.client.provider", "memory",
-                        "data.collector.worker.threads", "50")
-                )
+                .configuration(new StoreBasedDynamicConfiguration.Builder()
+                        .values("content.store.provider", "rawdata")
+                        .values("rawdata.client.provider", "memory")
+                        .values("data.collector.worker.threads", "40")
+                        .values("postgres.driver.host", "localhost")
+                        .values("postgres.driver.port", "5432")
+                        .values("postgres.driver.user", "rdc")
+                        .values("postgres.driver.password", "rdc")
+                        .values("postgres.driver.database", "rdc")
+                        .values("postgres.recreate-database", "false")
+                        .values("rawdata.postgres.consumer.prefetch-size", "100")
+                        .values("rawdata.postgres.consumer.prefetch-poll-interval-when-empty", "1000")
+                        .build()
+                        .asMap())
                 .buildCertificateFactory(CommonUtils.currentPath())
                 //.stopAtNumberOfIterations(5)
                 .printConfiguration()
-                .printExecutionPlan()
-                .flow(Flow.start("Collect Sirius", "loop")
+                //.printExecutionPlan()
+                .specification(Specification.start("Collect Sirius", "loop")
                         .configure(context()
-                                .topic("sirius")
+                                .topic("testdata/sirius")
                                 .header("accept", "application/xml")
                                 .variable("baseURL", "https://api-at.sits.no")
                                 .variable("rettighetspakke", "ssb")
                                 .variable("hentAntallMeldingerOmGangen", "100")
                                 .variable("fromSequence", "1")
-                                .variable("hendelse", "utkast")
-                                //.variable("hendelse", "fastsatt")
+                                //.variable("hendelse", "utkast")
+                                .variable("hendelse", "fastsatt")
                                 //.variable("fromSequence", "${contentStore.lastPosition(topic) == null ? initialPosition : contentStore.lastPosition(topic)}")
                         )
                         .configure(security()
@@ -58,7 +66,7 @@ public class SiriusWorkerTest {
                                 .variable("fromSequence", "${nextSequence}")
                                 .addPageContent()
                                 .iterate(execute("parts"))
-                                .prefetchThreshold(25)
+                                .prefetchThreshold(150)
                                 .until(whenVariableIsNull("nextSequence"))
                         )
                         .function(get("parts")

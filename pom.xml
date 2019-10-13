@@ -49,6 +49,7 @@
 
     <modules>
         <module>ske-sirius-worker</module>
+        <module>toll-tvinn-worker</module>
     </modules>
 
     <profiles>

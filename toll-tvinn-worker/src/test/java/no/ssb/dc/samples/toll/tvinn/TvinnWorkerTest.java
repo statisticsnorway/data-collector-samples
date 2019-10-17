@@ -51,7 +51,7 @@ public class TvinnWorkerTest {
                                 .header("accept", "application/xml")
                                 .variable("TestURL", "https://mp-at.toll.no")
                                 .variable("ProduksjonURL", "https://mp-sit.toll.no")
-                                .variable("fromMarker", "last")
+                                .variable("nextMarker", "${contentStream.hasLastPosition() ? contentStream.lastPosition() : \"last\"}")
                         )
                         .configure(security()
                                 .sslBundleName("toll-test-certs")

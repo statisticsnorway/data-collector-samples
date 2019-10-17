@@ -30,7 +30,7 @@ public class FregWorkerTest {
     public void thatWorkerCollectSiriusData() {
         Worker.newBuilder()
                 .configuration(new StoreBasedDynamicConfiguration.Builder()
-                        .values("content.store.provider", "rawdata")
+                        .values("content.stream.connector", "rawdata")
                         .values("rawdata.client.provider", "memory")
                         .values("data.collector.worker.threads", "75")
                         .values("postgres.driver.host", "localhost")

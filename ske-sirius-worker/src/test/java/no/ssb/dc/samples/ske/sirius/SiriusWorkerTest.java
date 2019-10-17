@@ -30,7 +30,7 @@ public class SiriusWorkerTest {
     public void thatWorkerCollectSiriusData() throws InterruptedException {
         Worker.newBuilder()
                 .configuration(new StoreBasedDynamicConfiguration.Builder()
-                        .values("content.store.provider", "rawdata")
+                        .values("content.stream.connector", "rawdata")
                         .values("rawdata.client.provider", "memory")
                         .values("data.collector.worker.threads", "40")
                         .values("postgres.driver.host", "localhost")

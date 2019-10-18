@@ -2,10 +2,15 @@ package no.ssb.dc.samples.toll.tvinn;
 
 import no.ssb.config.StoreBasedDynamicConfiguration;
 import no.ssb.dc.api.Specification;
+import no.ssb.dc.api.node.builder.SpecificationBuilder;
 import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.executor.Worker;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static no.ssb.dc.api.Builders.addContent;
 import static no.ssb.dc.api.Builders.context;
@@ -23,6 +28,43 @@ import static no.ssb.dc.api.Builders.whenVariableIsNull;
 import static no.ssb.dc.api.Builders.xpath;
 
 public class TvinnWorkerTest {
+
+    static final SpecificationBuilder specificationBuilder = Specification.start("Collect Tvinn", "loop")
+            .configure(context()
+                    .topic("tvinn-test")
+                    .header("accept", "application/xml")
+                    .variable("TestURL", "https://mp-at.toll.no")
+                    .variable("ProduksjonURL", "https://mp-sit.toll.no")
+                    .variable("nextMarker", "${contentStream.hasLastPosition() ? contentStream.lastPosition() : \"last\"}")
+            )
+            .configure(security()
+                    .sslBundleName("toll-test-certs")
+            )
+            .function(paginate("loop")
+                    .variable("fromMarker", "${nextMarker}")
+                    .addPageContent()
+                    .iterate(execute("event-list"))
+                    .prefetchThreshold(150)
+                    .until(whenVariableIsNull("nextMarker"))
+            )
+            .function(get("event-list")
+                    .url("${TestURL}/atomfeed/toll/deklarasjon-ekstern-feed/?marker=${fromMarker}&limit=25&direction=forward")
+                    .validate(status().success(200))
+                    .pipe(sequence(xpath("/feed/entry"))
+                            .expected(xpath("/entry/id"))
+                    )
+                    .pipe(nextPage()
+                            .output("nextMarker",
+                                    regex(xpath("/feed/link[@rel=\"previous\"]/@href"), "(?<=[?&]marker=)[^&]*")
+                            )
+                    )
+                    .pipe(parallel(xpath("/feed/entry"))
+                            .variable("position", xpath("/entry/id"))
+                            .pipe(addContent("${position}", "entry"))
+                            .pipe(publish("${position}"))
+                    )
+                    .returnVariables("nextMarker")
+            );
 
     @Ignore
     @Test
@@ -45,44 +87,22 @@ public class TvinnWorkerTest {
                 .buildCertificateFactory(CommonUtils.currentPath())
                 //.stopAtNumberOfIterations(5)
                 .printConfiguration()
-                .specification(Specification.start("Collect Tvinn", "loop")
-                        .configure(context()
-                                .topic("tvinn")
-                                .header("accept", "application/xml")
-                                .variable("TestURL", "https://mp-at.toll.no")
-                                .variable("ProduksjonURL", "https://mp-sit.toll.no")
-                                .variable("nextMarker", "${contentStream.hasLastPosition() ? contentStream.lastPosition() : \"last\"}")
-                        )
-                        .configure(security()
-                                .sslBundleName("toll-test-certs")
-                        )
-                        .function(paginate("loop")
-                                .variable("fromMarker", "${nextMarker}")
-                                .addPageContent()
-                                .iterate(execute("event-list"))
-                                .prefetchThreshold(150)
-                                .until(whenVariableIsNull("nextMarker"))
-                        )
-                        .function(get("event-list")
-                                .url("${TestURL}/atomfeed/toll/deklarasjon-ekstern-feed/?marker=${fromMarker}&limit=25&direction=forward")
-                                .validate(status().success(200))
-                                .pipe(sequence(xpath("/feed/entry"))
-                                        .expected(xpath("/entry/id"))
-                                )
-                                .pipe(nextPage()
-                                        .output("nextMarker",
-                                                regex(xpath("/feed/link[@rel=\"previous\"]/@href"), "(?<=[?&]marker=)[^&]*")
-                                        )
-                                )
-                                .pipe(parallel(xpath("/feed/entry"))
-                                        .variable("position", xpath("/entry/id"))
-                                        .pipe(addContent("${position}", "entry"))
-                                        .pipe(publish("${position}"))
-                                )
-                                .returnVariables("nextMarker")
-                        )
-                )
+                .specification(specificationBuilder)
                 .build()
                 .run();
+    }
+
+    @Ignore
+    @Test
+    public void writeTargetConsumerSpec() throws IOException {
+        Path currentPath = CommonUtils.currentPath();
+        Path targetPath = currentPath.resolve("data-collection-consumer-specifications");
+
+        boolean targetProjectExists = targetPath.toFile().exists();
+        if (!targetProjectExists) {
+            throw new RuntimeException(String.format("Couldn't locate '%s' under currentPath: %s%n", targetPath.toFile().getName(), currentPath.toAbsolutePath().toString()));
+        }
+
+        Files.writeString(targetPath.resolve("specs").resolve("toll-tvinn-test-spec.json"), specificationBuilder.serialize());
     }
 }

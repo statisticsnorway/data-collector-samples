@@ -2,10 +2,15 @@ package no.ssb.dc.samples.ske.freg;
 
 import no.ssb.config.StoreBasedDynamicConfiguration;
 import no.ssb.dc.api.Specification;
+import no.ssb.dc.api.node.builder.SpecificationBuilder;
 import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.executor.Worker;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static no.ssb.dc.api.Builders.addContent;
 import static no.ssb.dc.api.Builders.context;
@@ -24,6 +29,61 @@ import static no.ssb.dc.api.Builders.xpath;
 
 // https://skatteetaten.github.io/folkeregisteret-api-dokumentasjon/oppslag/
 public class FregWorkerTest {
+
+    static final SpecificationBuilder specificationBuilder = Specification.start("Collect FREG", "loop")
+            .configure(context()
+                    .topic("freg-playground")
+                    .header("accept", "application/xml")
+                    .variable("ProdusentTestURL", "https://folkeregisteret-api-ekstern.sits.no")
+                    .variable("KonsumentTestURL", "https://folkeregisteret-api-konsument.sits.no")
+                    .variable("ProduksjonURL", "https://folkeregisteret.api.skatteetaten.no")
+                    .variable("PlaygroundURL", "https://folkeregisteret-api-konsument-playground.sits.no")
+                    .variable("nextSequence", "${contentStream.hasLastPosition() ? contentStream.lastPosition() : \"1\"}")
+            )
+            .configure(security()
+                    .sslBundleName("ske-test-certs")
+            )
+            .function(paginate("loop")
+                    .variable("fromSequence", "${nextSequence}")
+                    .addPageContent()
+                    .iterate(execute("event-list"))
+                    .prefetchThreshold(1500)
+                    .until(whenVariableIsNull("nextSequence"))
+            )
+            .function(get("event-list")
+                    .url("${PlaygroundURL}/folkeregisteret/offentlig-med-hjemmel/api/v1/hendelser/feed/?seq=${fromSequence}")
+                    .validate(status().success(200).fail(400).fail(404).fail(500))
+                    .pipe(sequence(xpath("/feed/entry"))
+                            .expected(xpath("/entry/content/lagretHendelse/sekvensnummer"))
+                    )
+                    .pipe(nextPage()
+                            .output("nextSequence",
+                                    regex(xpath("/feed/link[@rel=\"next\"]/@href"), "(?<=[?&]seq=)[^&]*")
+                            )
+                    )
+                    .pipe(parallel(xpath("/feed/entry"))
+                            .variable("position", xpath("/entry/content/lagretHendelse/sekvensnummer"))
+                            .pipe(addContent("${position}", "entry"))
+                            .pipe(execute("event-document")
+                                    .inputVariable("eventId", xpath("/entry/content/lagretHendelse/hendelse/hendelsesdokument"))
+                            )
+                            .pipe(execute("person-document")
+                                    .inputVariable("personId", xpath("/entry/content/lagretHendelse/hendelse/folkeregisteridentifikator"))
+                            )
+                            .pipe(publish("${position}"))
+                    )
+                    .returnVariables("nextSequence")
+            )
+            .function(get("event-document")
+                    .url("${PlaygroundURL}/folkeregisteret/offentlig-med-hjemmel/api/v1/hendelser/${eventId}")
+                    .validate(status().success(200).fail(400).fail(404).fail(500))
+                    .pipe(addContent("${position}", "event"))
+            )
+            .function(get("person-document")
+                    .url("${PlaygroundURL}/folkeregisteret/offentlig-med-hjemmel/api/v1/personer/${personId}")
+                    .validate(status().success(200).fail(400).fail(404).fail(500))
+                    .pipe(addContent("${position}", "person"))
+            );
 
     @Ignore
     @Test
@@ -46,63 +106,23 @@ public class FregWorkerTest {
                 .buildCertificateFactory(CommonUtils.currentPath())
                 //.stopAtNumberOfIterations(5)
                 .printConfiguration()
-                .specification(Specification.start("Collect FREG", "loop")
-                        .configure(context()
-                                .topic("freg")
-                                .header("accept", "application/xml")
-                                .variable("ProdusentTestURL", "https://folkeregisteret-api-ekstern.sits.no")
-                                .variable("KonsumentTestURL", "https://folkeregisteret-api-konsument.sits.no")
-                                .variable("ProduksjonURL", "https://folkeregisteret.api.skatteetaten.no")
-                                .variable("PlaygroundURL", "https://folkeregisteret-api-konsument-playground.sits.no")
-                                .variable("nextSequence", "${contentStream.hasLastPosition() ? contentStream.lastPosition() : \"1\"}")
-                        )
-                        .configure(security()
-                                .sslBundleName("ske-test-certs")
-                        )
-                        .function(paginate("loop")
-                                .variable("fromSequence", "${nextSequence}")
-                                .addPageContent()
-                                .iterate(execute("event-list"))
-                                .prefetchThreshold(1500)
-                                .until(whenVariableIsNull("nextSequence"))
-                        )
-                        .function(get("event-list")
-                                .url("${PlaygroundURL}/folkeregisteret/offentlig-med-hjemmel/api/v1/hendelser/feed/?seq=${fromSequence}")
-                                .validate(status().success(200).fail(400).fail(404).fail(500))
-                                .pipe(sequence(xpath("/feed/entry"))
-                                        .expected(xpath("/entry/content/lagretHendelse/sekvensnummer"))
-                                )
-                                .pipe(nextPage()
-                                        .output("nextSequence",
-                                                regex(xpath("/feed/link[@rel=\"next\"]/@href"), "(?<=[?&]seq=)[^&]*")
-                                        )
-                                )
-                                .pipe(parallel(xpath("/feed/entry"))
-                                        .variable("position", xpath("/entry/content/lagretHendelse/sekvensnummer"))
-                                        .pipe(addContent("${position}", "entry"))
-                                        .pipe(execute("event-document")
-                                                .inputVariable("eventId", xpath("/entry/content/lagretHendelse/hendelse/hendelsesdokument"))
-                                        )
-                                        .pipe(execute("person-document")
-                                                .inputVariable("personId", xpath("/entry/content/lagretHendelse/hendelse/folkeregisteridentifikator"))
-                                        )
-                                        .pipe(publish("${position}"))
-                                )
-                                .returnVariables("nextSequence")
-                        )
-                        .function(get("event-document")
-                                .url("${PlaygroundURL}/folkeregisteret/offentlig-med-hjemmel/api/v1/hendelser/${eventId}")
-                                .validate(status().success(200).fail(400).fail(404).fail(500))
-                                .pipe(addContent("${position}", "event"))
-                        )
-                        .function(get("person-document")
-                                .url("${PlaygroundURL}/folkeregisteret/offentlig-med-hjemmel/api/v1/personer/${personId}")
-                                .validate(status().success(200).fail(400).fail(404).fail(500))
-                                .pipe(addContent("${position}", "person"))
-                        )
-                )
+                .specification(specificationBuilder)
                 .build()
                 .run();
 
+    }
+
+    @Ignore
+    @Test
+    public void writeTargetConsumerSpec() throws IOException {
+        Path currentPath = CommonUtils.currentPath();
+        Path targetPath = currentPath.resolve("data-collection-consumer-specifications");
+
+        boolean targetProjectExists = targetPath.toFile().exists();
+        if (!targetProjectExists)  {
+            throw new RuntimeException(String.format("Couldn't locate '%s' under currentPath: %s%n", targetPath.toFile().getName(), currentPath.toAbsolutePath().toString()));
+        }
+
+        Files.writeString(targetPath.resolve("specs").resolve("ske-freg-playground-spec.json"), specificationBuilder.serialize());
     }
 }

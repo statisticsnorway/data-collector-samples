@@ -31,7 +31,7 @@
 
         <dependency>
             <groupId>no.ssb.dc</groupId>
-            <artifactId>data-collector-provider-content-store-rawdata</artifactId>
+            <artifactId>data-collector-connector-content-stream-rawdata</artifactId>
             <version>0.1-SNAPSHOT</version>
         </dependency>
 

@@ -38,7 +38,7 @@ public class FregWorkerTest {
                     .variable("KonsumentTestURL", "https://folkeregisteret-api-konsument.sits.no")
                     .variable("ProduksjonURL", "https://folkeregisteret.api.skatteetaten.no")
                     .variable("PlaygroundURL", "https://folkeregisteret-api-konsument-playground.sits.no")
-                    .variable("nextSequence", "${contentStream.hasLastPosition() ? contentStream.lastPosition() : \"1\"}")
+                    .variable("nextSequence", "${contentStream.lastOrInitialPosition(1)}")
             )
             .configure(security()
                     .sslBundleName("ske-test-certs")

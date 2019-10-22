@@ -91,7 +91,6 @@ public class SiriusWorkerTest {
                         .values("postgres.driver.user", "rdc")
                         .values("postgres.driver.password", "rdc")
                         .values("postgres.driver.database", "rdc")
-                        .values("postgres.recreate-database", "false")
                         .values("rawdata.postgres.consumer.prefetch-size", "100")
                         .values("rawdata.postgres.consumer.prefetch-poll-interval-when-empty", "1000")
                         .build()

@@ -38,7 +38,7 @@ public class SiriusWorkerTest {
                     .variable("rettighetspakke", "ssb")
                     .variable("hentAntallMeldingerOmGangen", "100")
                     .variable("hendelse", "utkast")
-                    .variable("nextSequence", "${contentStream.lastOrInitialPosition(1)}")
+                    .variable("nextSequence", "${cast.toLong(contentStream.lastOrInitialPosition(0)) + 1}")
             )
             .configure(security()
                     .sslBundleName("ske-test-certs")

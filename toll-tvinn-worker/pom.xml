@@ -38,7 +38,7 @@
         <dependency>
             <groupId>no.ssb.rawdata</groupId>
             <artifactId>rawdata-client-provider-gcs</artifactId>
-            <version>0.2</version>
+            <version>0.3</version>
         </dependency>
 
         <dependency>

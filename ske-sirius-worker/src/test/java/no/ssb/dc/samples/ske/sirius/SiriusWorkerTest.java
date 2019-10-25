@@ -30,7 +30,7 @@ import static no.ssb.dc.api.Builders.xpath;
 // https://skatteetaten.github.io/datasamarbeid-api-dokumentasjon/reference_skattemelding
 public class SiriusWorkerTest {
 
-    static final SpecificationBuilder specificationBuilder = Specification.start("Collect Sirius", "loop")
+    static final SpecificationBuilder specificationBuilder = Specification.start("SKE-SIRIUS", "Collect Sirius", "loop")
             .configure(context()
                     .topic("sirius-person-utkast")
                     .header("accept", "application/xml")

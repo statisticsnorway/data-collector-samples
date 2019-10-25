@@ -30,7 +30,7 @@ import static no.ssb.dc.api.Builders.xpath;
 // https://skatteetaten.github.io/folkeregisteret-api-dokumentasjon/oppslag/
 public class FregWorkerTest {
 
-    static final SpecificationBuilder specificationBuilder = Specification.start("Collect FREG", "loop")
+    static final SpecificationBuilder specificationBuilder = Specification.start("SKE-FREG", "Collect FREG", "loop")
             .configure(context()
                     .topic("freg-playground")
                     .header("accept", "application/xml")
@@ -87,7 +87,7 @@ public class FregWorkerTest {
 
     @Ignore
     @Test
-    public void thatWorkerCollectSiriusData() {
+    public void thatWorkerCollectFregData() {
         Worker.newBuilder()
                 .configuration(new StoreBasedDynamicConfiguration.Builder()
                         .values("content.stream.connector", "rawdata")

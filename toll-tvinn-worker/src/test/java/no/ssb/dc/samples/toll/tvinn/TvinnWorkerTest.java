@@ -29,7 +29,7 @@ import static no.ssb.dc.api.Builders.xpath;
 
 public class TvinnWorkerTest {
 
-    static final SpecificationBuilder specificationBuilder = Specification.start("Collect Tvinn", "loop")
+    static final SpecificationBuilder specificationBuilder = Specification.start("TOLL-TVINN","Collect Tvinn", "loop")
             .configure(context()
                     .topic("tvinn-test")
                     .header("accept", "application/xml")

@@ -32,13 +32,13 @@
         <dependency>
             <groupId>no.ssb.rawdata</groupId>
             <artifactId>rawdata-client-api</artifactId>
-            <version>0.20</version>
+            <version>0.21</version>
         </dependency>
 
         <dependency>
             <groupId>no.ssb.rawdata</groupId>
             <artifactId>rawdata-client-provider-gcs</artifactId>
-            <version>0.3</version>
+            <version>0.4</version>
         </dependency>
 
         <dependency>

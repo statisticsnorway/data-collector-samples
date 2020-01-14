@@ -11,6 +11,7 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static no.ssb.dc.api.Builders.addContent;
 import static no.ssb.dc.api.Builders.context;
@@ -34,14 +35,16 @@ public class SiriusWorkerTest {
             .configure(context()
                     .topic("sirius-person-utkast")
                     .header("accept", "application/xml")
-                    .variable("baseURL", "https://api-at.sits.no")
+//                    .variable("baseURL", "https://api-at.sits.no")
+                    .variable("baseURL", "https://api.skatteetaten.no")
                     .variable("rettighetspakke", "ssb")
                     .variable("hentAntallMeldingerOmGangen", "100")
                     .variable("hendelse", "utkast")
                     .variable("nextSequence", "${cast.toLong(contentStream.lastOrInitialPosition(0)) + 1}")
             )
             .configure(security()
-                    .sslBundleName("ske-test-certs")
+//                    .sslBundleName("ske-test-certs")
+                    .sslBundleName("ske-prod-certs")
             )
             .function(paginate("loop")
                     .variable("fromSequence", "${nextSequence}")
@@ -78,14 +81,18 @@ public class SiriusWorkerTest {
                     .pipe(addContent("${position}", "skattemelding"))
             );
 
-    @Ignore
+//    @Ignore
     @Test
     public void thatWorkerCollectSiriusData() throws InterruptedException {
+//        Path scanDirectory = CommonUtils.currentPath();
+        Path scanDirectory = Paths.get("/Volumes/SSB BusinessSSL/certs");
+
         Worker.newBuilder()
                 .configuration(new StoreBasedDynamicConfiguration.Builder()
-                        .values("content.stream.connector", "rawdata")
+//                        .values("content.stream.connector", "rawdata")
+                        .values("content.stream.connector", "discarding")
                         .values("rawdata.client.provider", "memory")
-                        .values("data.collector.worker.threads", "40")
+                        .values("data.collector.worker.threads", "20")
                         .values("local-temp-folder", "target/_tmp_avro_")
                         .values("avro-file.max.seconds", "86400")
                         .values("avro-file.max.bytes", "67108864")
@@ -103,7 +110,7 @@ public class SiriusWorkerTest {
                         .environment("DC_")
                         .build()
                         .asMap())
-                .buildCertificateFactory(CommonUtils.currentPath())
+                .buildCertificateFactory(scanDirectory)
                 //.stopAtNumberOfIterations(5)
                 .printConfiguration()
                 //.printExecutionPlan()

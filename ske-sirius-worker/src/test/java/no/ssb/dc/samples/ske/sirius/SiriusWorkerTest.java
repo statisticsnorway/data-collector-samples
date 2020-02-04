@@ -90,7 +90,7 @@ public class SiriusWorkerTest {
                     .pipe(addContent("${position}", "skattemelding"))
             );
 
-//    @Ignore
+    @Ignore
     @Test
     public void thatWorkerCollectSiriusData() throws InterruptedException {
 //        Path scanDirectory = CommonUtils.currentPath();

@@ -87,7 +87,7 @@ public class FregWorkerTest {
                     .pipe(addContent("${position}", "person"))
             );
 
-//    @Ignore
+    @Ignore
     @Test
     public void thatWorkerCollectFregData() {
         Worker.newBuilder()

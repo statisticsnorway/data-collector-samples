@@ -14,10 +14,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static no.ssb.dc.api.Builders.addContent;
+import static no.ssb.dc.api.Builders.bodyContains;
 import static no.ssb.dc.api.Builders.context;
 import static no.ssb.dc.api.Builders.eval;
 import static no.ssb.dc.api.Builders.execute;
 import static no.ssb.dc.api.Builders.get;
+import static no.ssb.dc.api.Builders.jqpath;
 import static no.ssb.dc.api.Builders.nextPage;
 import static no.ssb.dc.api.Builders.paginate;
 import static no.ssb.dc.api.Builders.parallel;
@@ -77,7 +79,14 @@ public class SiriusWorkerTest {
             )
             .function(get("utkast-melding")
                     .url("${baseURL}/api/formueinntekt/skattemelding/${hendelse}/${rettighetspakke}/${year}/${utkastIdentifikator}")
-                    .validate(status().success(200).fail(400).fail(404).fail(500))
+                    .validate(status()
+                            .success(200)
+                            .success(404, bodyContains(jqpath(".kode"), "SM-004"))
+                            .success(404, bodyContains(jqpath(".kode"), "SM-005"))
+                            .fail(400)
+                            .fail(404)
+                            .fail(500)
+                    )
                     .pipe(addContent("${position}", "skattemelding"))
             );
 

@@ -5,8 +5,8 @@ import no.ssb.dc.api.Specification;
 import no.ssb.dc.api.node.builder.SpecificationBuilder;
 import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.executor.Worker;
-import org.testng.annotations.Ignore;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -90,7 +90,7 @@ public class SiriusWorkerTest {
                     .pipe(addContent("${position}", "skattemelding"))
             );
 
-    @Ignore
+    @Disabled
     @Test
     public void thatWorkerCollectSiriusData() throws InterruptedException {
 //        Path scanDirectory = CommonUtils.currentPath();
@@ -128,7 +128,7 @@ public class SiriusWorkerTest {
                 .run();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void writeTargetConsumerSpec() throws IOException {
         Path currentPath = CommonUtils.currentPath();

@@ -43,7 +43,7 @@ public class TvinnWorkerTest {
             )
             .function(paginate("loop")
                     .variable("fromMarker", "${nextMarker}")
-                    .addPageContent()
+                    .addPageContent("fromMarker")
                     .iterate(execute("event-list"))
                     .prefetchThreshold(150)
                     .until(whenVariableIsNull("nextMarker"))

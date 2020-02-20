@@ -47,7 +47,7 @@ public class FregWorkerTest {
             )
             .function(paginate("loop")
                     .variable("fromSequence", "${nextSequence}")
-                    .addPageContent()
+                    .addPageContent("fromSequence")
                     .iterate(execute("event-list"))
                     .prefetchThreshold(1500)
                     .until(whenVariableIsNull("nextSequence"))

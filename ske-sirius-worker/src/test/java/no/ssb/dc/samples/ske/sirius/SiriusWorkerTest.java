@@ -50,7 +50,7 @@ public class SiriusWorkerTest {
             )
             .function(paginate("loop")
                     .variable("fromSequence", "${nextSequence}")
-                    .addPageContent()
+                    .addPageContent("fromSequence")
                     .iterate(execute("parts"))
                     .prefetchThreshold(150)
                     .until(whenVariableIsNull("nextSequence"))

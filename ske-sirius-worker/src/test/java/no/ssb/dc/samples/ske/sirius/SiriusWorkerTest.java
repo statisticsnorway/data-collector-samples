@@ -19,7 +19,6 @@ import static no.ssb.dc.api.Builders.context;
 import static no.ssb.dc.api.Builders.eval;
 import static no.ssb.dc.api.Builders.execute;
 import static no.ssb.dc.api.Builders.get;
-import static no.ssb.dc.api.Builders.jqpath;
 import static no.ssb.dc.api.Builders.nextPage;
 import static no.ssb.dc.api.Builders.paginate;
 import static no.ssb.dc.api.Builders.parallel;
@@ -37,16 +36,16 @@ public class SiriusWorkerTest {
             .configure(context()
                     .topic("sirius-person-utkast")
                     .header("accept", "application/xml")
-//                    .variable("baseURL", "https://api-at.sits.no")
-                    .variable("baseURL", "https://api.skatteetaten.no")
+                    .variable("baseURL", "https://api-at.sits.no")
+//                    .variable("baseURL", "https://api.skatteetaten.no")
                     .variable("rettighetspakke", "ssb")
                     .variable("hentAntallMeldingerOmGangen", "100")
                     .variable("hendelse", "utkast")
                     .variable("nextSequence", "${cast.toLong(contentStream.lastOrInitialPosition(0)) + 1}")
             )
             .configure(security()
-//                    .sslBundleName("ske-test-certs")
-                    .sslBundleName("ske-prod-certs")
+                    .sslBundleName("ske-test-certs")
+//                    .sslBundleName("ske-prod-certs")
             )
             .function(paginate("loop")
                     .variable("fromSequence", "${nextSequence}")
@@ -81,8 +80,8 @@ public class SiriusWorkerTest {
                     .url("${baseURL}/api/formueinntekt/skattemelding/${hendelse}/${rettighetspakke}/${year}/${utkastIdentifikator}")
                     .validate(status()
                             .success(200)
-                            .success(404, bodyContains(jqpath(".kode"), "SM-004"))
-                            .success(404, bodyContains(jqpath(".kode"), "SM-005"))
+                            .success(404, bodyContains(xpath("/feil/kode"), "SM-004"))
+                            .success(404, bodyContains(xpath("/feil/kode"), "SM-005"))
                             .fail(400)
                             .fail(404)
                             .fail(500)
@@ -131,7 +130,7 @@ public class SiriusWorkerTest {
     @Disabled
     @Test
     public void writeTargetConsumerSpec() throws IOException {
-        Path currentPath = CommonUtils.currentPath();
+        Path currentPath = CommonUtils.currentPath().getParent().getParent();
         Path targetPath = currentPath.resolve("data-collection-consumer-specifications");
 
         boolean targetProjectExists = targetPath.toFile().exists();

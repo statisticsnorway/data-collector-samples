@@ -77,7 +77,7 @@ public class SiriusWorkerTest {
                     .returnVariables("nextSequence")
             )
             .function(get("utkast-melding")
-                    .url("${baseURL}/api/formueinntekt/skattemelding/${hendelse}/${rettighetspakke}/${year}/${utkastIdentifikator}/${registreringstidspunkt}")
+                    .url("${baseURL}/api/formueinntekt/skattemelding/${hendelse}/${rettighetspakke}/${year}/${utkastIdentifikator}?gjelderPaaTidspunkt=${registreringstidspunkt}")
                     .validate(status()
                             .success(200)
                             .success(404, bodyContains(xpath("/feil/kode"), "SM-001"))

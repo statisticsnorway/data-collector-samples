@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static no.ssb.dc.api.Builders.addContent;
 import static no.ssb.dc.api.Builders.bodyContains;
@@ -71,17 +70,18 @@ public class SiriusWorkerTest {
                             .pipe(execute("utkast-melding")
                                     .inputVariable("utkastIdentifikator", xpath("/hendelse/identifikator"))
                                     .inputVariable("year", xpath("/hendelse/gjelderPeriode"))
+                                    .inputVariable("registreringstidspunkt", xpath("/hendelse/registreringstidspunkt"))
                             )
                             .pipe(publish("${position}"))
                     )
                     .returnVariables("nextSequence")
             )
             .function(get("utkast-melding")
-                    .url("${baseURL}/api/formueinntekt/skattemelding/${hendelse}/${rettighetspakke}/${year}/${utkastIdentifikator}")
+                    .url("${baseURL}/api/formueinntekt/skattemelding/${hendelse}/${rettighetspakke}/${year}/${utkastIdentifikator}/${registreringstidspunkt}")
                     .validate(status()
                             .success(200)
-                            .success(404, bodyContains(xpath("/feil/kode"), "SM-004"))
-                            .success(404, bodyContains(xpath("/feil/kode"), "SM-005"))
+                            .success(404, bodyContains(xpath("/feil/kode"), "SM-001"))
+                            .success(404, bodyContains(xpath("/feil/kode"), "SM-002"))
                             .fail(400)
                             .fail(404)
                             .fail(500)
@@ -138,7 +138,7 @@ public class SiriusWorkerTest {
             throw new RuntimeException(String.format("Couldn't locate '%s' under currentPath: %s%n", targetPath.toFile().getName(), currentPath.toAbsolutePath().toString()));
         }
 
-        Files.writeString(targetPath.resolve("specs").resolve("ske-sirius-person-utkast-spec.json"), specificationBuilder.serialize());
-        Files.writeString(targetPath.resolve("specs").resolve("ske-sirius-person-fastsatt-spec.json"), specificationBuilder.serialize().replace("utkast", "fastsatt"));
+        Files.writeString(targetPath.resolve("specs").resolve("ske-sirius-person-utkast-spec.yml"), specificationBuilder.serializeAsYaml());
+        Files.writeString(targetPath.resolve("specs").resolve("ske-sirius-person-fastsatt-spec.yml"), specificationBuilder.serializeAsYaml().replace("utkast", "fastsatt"));
     }
 }

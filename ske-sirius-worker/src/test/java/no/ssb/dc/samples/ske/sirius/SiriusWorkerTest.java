@@ -70,7 +70,7 @@ public class SiriusWorkerTest {
                             .pipe(addContent("${position}", "entry"))
                             .pipe(execute("utkast-melding")
                                     .inputVariable("utkastIdentifikator", xpath("/hendelse/identifikator"))
-                                    .inputVariable("year", xpath("/hendelse/gjelderPeriode"))
+                                    .inputVariable("gjelderPeriode", xpath("/hendelse/gjelderPeriode"))
                                     .inputVariable("registreringstidspunkt", xpath("/hendelse/registreringstidspunkt"))
                             )
                             .pipe(publish("${position}"))
@@ -78,7 +78,7 @@ public class SiriusWorkerTest {
                     .returnVariables("nextSequence")
             )
             .function(get("utkast-melding")
-                    .url("${baseURL}/api/formueinntekt/skattemelding/${hendelse}/${rettighetspakke}/${year}/${utkastIdentifikator}?gjelderPaaTidspunkt=${registreringstidspunkt}")
+                    .url("${baseURL}/api/formueinntekt/skattemelding/${hendelse}/${rettighetspakke}/${gjelderPeriode}/${utkastIdentifikator}?gjelderPaaTidspunkt=${registreringstidspunkt}")
                     .validate(status()
                             .success(200)
                             .success(404, bodyContains(xpath("/feil/kode"), "SM-001"))
@@ -139,7 +139,12 @@ public class SiriusWorkerTest {
             throw new RuntimeException(String.format("Couldn't locate '%s' under currentPath: %s%n", targetPath.toFile().getName(), currentPath.toAbsolutePath().toString()));
         }
 
-        Files.writeString(targetPath.resolve("specs").resolve("ske-sirius-person-utkast-spec.yml"), specificationBuilder.serializeAsYaml());
-        Files.writeString(targetPath.resolve("specs").resolve("ske-sirius-person-fastsatt-spec.yml"), specificationBuilder.serializeAsYaml().replace("utkast", "fastsatt"));
+        if (true) {
+            Files.writeString(targetPath.resolve("specs").resolve("ske-sirius-person-utkast-spec.json"), specificationBuilder.serialize());
+            Files.writeString(targetPath.resolve("specs").resolve("ske-sirius-person-fastsatt-spec.json"), specificationBuilder.serialize().replace("utkast", "fastsatt"));
+        } else {
+            Files.writeString(targetPath.resolve("specs").resolve("ske-sirius-person-utkast-spec.yml"), specificationBuilder.serializeAsYaml());
+            Files.writeString(targetPath.resolve("specs").resolve("ske-sirius-person-fastsatt-spec.yml"), specificationBuilder.serializeAsYaml().replace("utkast", "fastsatt"));
+        }
     }
 }

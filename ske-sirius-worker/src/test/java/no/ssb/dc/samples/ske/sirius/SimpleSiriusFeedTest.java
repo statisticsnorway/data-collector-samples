@@ -8,11 +8,13 @@ import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.executor.FixedThreadPool;
 import no.ssb.dc.core.security.CertificateContext;
 import no.ssb.dc.core.security.CertificateFactory;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -34,6 +36,9 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -41,22 +46,32 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-// https://skatteetaten.github.io/datasamarbeid-api-dokumentasjon/reference_skattemelding
+/**
+ * This test case fetches a Sirius Utkast and Fastsatt Hendelseliste and Skattemeldinger and exports all data to zip file.
+ * <p>
+ * SKE doc: https://skatteetaten.github.io/datasamarbeid-api-dokumentasjon/reference_skattemelding
+ */
 class SimpleSiriusFeedTest {
 
     final static Logger LOG = LoggerFactory.getLogger(SimpleSiriusFeedTest.class);
     final static Client client = Client.newClientBuilder().sslContext(getBusinessSSLContext()).build();
     final static String TEST_BASE_URL = "https://api-at.sits.no";
+    final static List<Path> writtenFiles = new ArrayList<>();
+    final int fromSequence = 1;
+    final int numberOfEvents = 3000;
 
     static SSLContext getBusinessSSLContext() {
         CertificateFactory factory = CertificateFactory.scanAndCreate(CommonUtils.currentPath());
@@ -64,7 +79,37 @@ class SimpleSiriusFeedTest {
         return context.sslContext();
     }
 
-    Response getHendelseListe(Hendelse hendelse, String fromSequence, int numberOfEvents) {
+    @AfterAll
+    static void afterAll() {
+        pack();
+    }
+
+    static void pack() {
+        writtenFiles.sort(Comparator.comparing(Path::toString));
+        Path outputPath = CommonUtils.currentPath().resolve("target").resolve(String.format("sirius-dump-%s.zip", FileWriter.getTimestampAsString()));
+        LOG.trace("Pack file: {}", outputPath.toString());
+        try (FileOutputStream fos = new FileOutputStream(outputPath.toFile())) {
+            try (ZipOutputStream zos = new ZipOutputStream(fos)) {
+                for (Path sourceFile : writtenFiles) {
+                    File sourceFileToZip = sourceFile.toFile();
+                    try (FileInputStream fis = new FileInputStream(sourceFileToZip)) {
+                        String workingDir = outputPath.getParent().normalize().toString();
+                        ZipEntry zipEntry = new ZipEntry(sourceFileToZip.getCanonicalFile().toString().replace(workingDir, "").substring(1));
+                        zos.putNextEntry(zipEntry);
+                        byte[] bytes = new byte[1024];
+                        int length;
+                        while ((length = fis.read(bytes)) >= 0) {
+                            zos.write(bytes, 0, length);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    Response getHendelseListe(Hendelse hendelse, int fromSequence, int numberOfEvents) {
         Request request = Request.newRequestBuilder()
                 .GET()
                 .header("accept", "application/xml")
@@ -85,19 +130,27 @@ class SimpleSiriusFeedTest {
     @Disabled
     @ParameterizedTest
     @EnumSource(Hendelse.class)
-    void getHendelseListe(Hendelse hendelse) throws ExecutionException, InterruptedException {
+    void getHendelseListe(Hendelse hendelse) {
         FixedThreadPool threadPool = FixedThreadPool.newInstance(20);
         List<CompletableFuture<Void>> futures = new ArrayList<>();
-        List<SkattemeldingResponse> responseList = new CopyOnWriteArrayList<>();
-
-        FileWriter fileWriter = new FileWriter(CommonUtils.currentPath().resolve("target").resolve("sirius").resolve(hendelse.value));
-        fileWriter.writeSkatteMeldinger("---------\n");
 
         LOG.trace("BEGIN");
-        Response hendelseListeResponse = getHendelseListe(hendelse, "1", 500);
+
+        final long past = Instant.now().toEpochMilli();
+        Response hendelseListeResponse = getHendelseListe(hendelse, fromSequence, numberOfEvents);
         assertEquals(200, hendelseListeResponse.statusCode());
+
+        StringBuilder comment = new StringBuilder();
+        comment.append("\n").append(String.format("   Page fra sekvensnummer: %s - antall: %s%n", fromSequence, numberOfEvents));
+        comment.append(String.format("   URL: %s%n", hendelseListeResponse.url()));
+        long duration = (Instant.now().toEpochMilli() - past);
+        comment.append(String.format("   Request duration: %s%n", duration));
+
         Document doc = XML.deserialize(hendelseListeResponse.body());
-        fileWriter.writeHendelseListe(XML.toPrettyXML(doc));
+        XML.insertComment(doc, comment.toString());
+
+        FileWriter fileWriter = new FileWriter(CommonUtils.currentPath().resolve("target").resolve("sirius").resolve(hendelse.value));
+        fileWriter.writeHendelseListe(fromSequence, numberOfEvents, XML.toPrettyXMLWithCommentFix(doc));
 
         NodeList hendelser = doc.getDocumentElement().getElementsByTagName("hendelse");
         for (int i = 0; i < hendelser.getLength(); i++) {
@@ -110,11 +163,20 @@ class SimpleSiriusFeedTest {
 
             CompletableFuture<Void> requestFuture = CompletableFuture
                     .supplyAsync(() -> {
-                        LOG.trace("Get Skattemelding: {}", sekvensnummer);
+                        final long past2 = Instant.now().toEpochMilli();
                         getSkattemelding(hendelse, identifikator, gjelderPeriode, registreringstidspunkt)
                                 .thenApply(response -> {
                                     //assertEquals(200, skattemeldingResponse.statusCode());
-                                    responseList.add(new SkattemeldingResponse(sekvensnummer, response));
+
+                                    StringBuilder comment2 = new StringBuilder();
+                                    comment2.append("\n").append(String.format("   Sekvensnummer: %s%n", sekvensnummer));
+                                    comment2.append(String.format("   URL: %s%n", response.url()));
+                                    long duration2 = (Instant.now().toEpochMilli() - past2);
+                                    comment2.append(String.format("   Request duration: %s%n", duration2));
+
+                                    LOG.trace("Write: {} - duration: {} millis", sekvensnummer, duration2);
+                                    fileWriter.writeSkatteMelding(Integer.parseInt(sekvensnummer), XML.toPrettyXML(response.body(), comment2.toString()));
+
                                     return response;
                                 }).join();
                         return null;
@@ -124,17 +186,9 @@ class SimpleSiriusFeedTest {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .thenApply(ignore -> {
-                    responseList.sort(Comparator.comparing(sr -> Integer.parseInt(sr.sekvensnummer)));
-                    for (SkattemeldingResponse sr : responseList) {
-                        LOG.trace("Write Skattemelding: {}", sr.sekvensnummer);
-                        fileWriter.writeSkatteMeldinger(String.format("Sekvensnummer: %s%n", sr.sekvensnummer));
-                        fileWriter.writeSkatteMeldinger(String.format("URL: %s%n", sr.response.url()));
-                        fileWriter.writeSkatteMeldinger(XML.toPrettyXML(sr.response.body()));
-                        fileWriter.writeSkatteMeldinger("---------\n");
-                    }
-                    return null;
-                }).join();
+                .join();
+
+        writtenFiles.addAll(fileWriter.positionAndFilenameMap.values());
 
         LOG.trace("END");
     }
@@ -150,39 +204,33 @@ class SimpleSiriusFeedTest {
         }
     }
 
-    static class SkattemeldingResponse {
-        final String sekvensnummer;
-        final Response response;
-
-        public SkattemeldingResponse(String sekvensnummer, Response response) {
-            this.sekvensnummer = sekvensnummer;
-            this.response = response;
-        }
-    }
-
     static class FileWriter {
         private final Path outputPath;
-        private final Path hendelseListeFile;
-        private final Path skattemeldingerFile;
+        private final Map<String, Path> positionAndFilenameMap = new LinkedHashMap<>();
 
         FileWriter(Path outputPath) {
             this.outputPath = outputPath;
-            String fileTimestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-            this.hendelseListeFile = outputPath.resolve(String.format("hendelse-liste-%s.xml", fileTimestamp));
-            this.skattemeldingerFile = outputPath.resolve(String.format("skatte-meldinger-%s.xml", fileTimestamp));
             LOG.trace("OutputPath: {}", outputPath.normalize().toString());
             try {
                 Files.createDirectories(outputPath);
-                Files.write(hendelseListeFile, new byte[0], StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-                Files.write(skattemeldingerFile, new byte[0], StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        void writeHendelseListe(String xml) {
+        static String getTimestampAsString() {
+            return new SimpleDateFormat("yyyy-MM-dd_HHmmss").format(new Date());
+        }
+
+        void writeHendelseListe(Integer fromSequenceInclusive, Integer toSequenceInclusive, String xml) {
             try {
-                BufferedWriter writer = Files.newBufferedWriter(hendelseListeFile, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
+                String filename = String.format("%04d-%04d-hendelse-liste-%s.xml", fromSequenceInclusive, toSequenceInclusive, getTimestampAsString());
+                Path filenamePath = outputPath.resolve(filename);
+                if (!Files.exists(filenamePath)) {
+                    Files.write(filenamePath, new byte[0], StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                    positionAndFilenameMap.put(filename, filenamePath); // track hendelseliste for packing
+                }
+                BufferedWriter writer = Files.newBufferedWriter(filenamePath, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
                 writer.write(xml);
                 writer.flush();
             } catch (IOException e) {
@@ -190,10 +238,19 @@ class SimpleSiriusFeedTest {
             }
         }
 
-
-        void writeSkatteMeldinger(String xml) {
+        void writeSkatteMelding(Integer sequenceInclusive, String xml) {
             try {
-                BufferedWriter writer = Files.newBufferedWriter(skattemeldingerFile, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
+                if (!positionAndFilenameMap.containsKey(sequenceInclusive.toString())) {
+                    String filename = String.format("%04d-skatte-melding-%s.xml", sequenceInclusive, getTimestampAsString());
+                    Path filenamePath = outputPath.resolve(filename);
+                    Files.write(filenamePath, new byte[0], StandardOpenOption.CREATE);
+                    positionAndFilenameMap.put(sequenceInclusive.toString(), filenamePath);
+                }
+                Path path = positionAndFilenameMap.get(sequenceInclusive.toString());
+                if (path == null) {
+                    throw new RuntimeException("File doesn't exist: " + sequenceInclusive);
+                }
+                BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
                 writer.write(xml);
                 writer.flush();
             } catch (IOException e) {
@@ -207,6 +264,7 @@ class SimpleSiriusFeedTest {
         static byte[] serialize(Object document) {
             try (StringWriter writer = new StringWriter()) {
                 Transformer transformer = TransformerFactory.newInstance().newTransformer();
+                transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
                 transformer.setOutputProperty(OutputKeys.INDENT, "yes");
                 transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
                 transformer.transform(new DOMSource((Node) document), new StreamResult(writer));
@@ -237,16 +295,32 @@ class SimpleSiriusFeedTest {
             }
         }
 
+        private static void insertComment(Document document, String comment) {
+            Comment xmlComment = document.createComment(comment);
+            Element documentElement = document.getDocumentElement();
+            documentElement.getParentNode().insertBefore(xmlComment, documentElement);
+        }
+
         static String toPrettyXML(Node node) {
             return new String(serialize(node), StandardCharsets.UTF_8);
         }
 
         static String toPrettyXML(byte[] bytes) {
-            return toPrettyXML(deserialize(bytes));
+            return toPrettyXML((Node) deserialize(bytes));
+        }
+
+        static String toPrettyXML(byte[] bytes, String comment) {
+            Document deserialized = deserialize(bytes);
+            insertComment(deserialized, comment);
+            return toPrettyXML(deserialized);
+        }
+
+        private static String toPrettyXMLWithCommentFix(Node node) {
+            return toPrettyXML((Node) node).replaceFirst("-->", "-->\n");
         }
 
         static String toPrettyXML(String xml) {
-            return toPrettyXML(deserialize(xml.getBytes()));
+            return toPrettyXML((Node) deserialize(xml.getBytes()));
         }
     }
 

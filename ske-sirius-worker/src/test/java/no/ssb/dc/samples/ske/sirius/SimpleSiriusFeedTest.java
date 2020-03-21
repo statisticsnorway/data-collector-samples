@@ -42,7 +42,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -119,17 +118,18 @@ class SimpleSiriusFeedTest {
             futures.add(requestFuture);
         }
 
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenApply(ignore -> {
-            Collections.sort(responseList, Comparator.comparing(sr -> Integer.parseInt(sr.sekvensnummer)));
-            for (SkattemeldingResponse sr : responseList) {
-                LOG.trace("Write Skattemelding: {}", sr.sekvensnummer);
-                fileWriter.writeSkatteMeldinger(String.format("Sekvensnummer: %s%n", sr.sekvensnummer));
-                fileWriter.writeSkatteMeldinger(String.format("URL: %s%n", sr.response.url()));
-                fileWriter.writeSkatteMeldinger(XML.toPrettyXML(sr.response.body()));
-                fileWriter.writeSkatteMeldinger("---------\n");
-            }
-            return null;
-        }).join();
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenApply(ignore -> {
+                    responseList.sort(Comparator.comparing(sr -> Integer.parseInt(sr.sekvensnummer)));
+                    for (SkattemeldingResponse sr : responseList) {
+                        LOG.trace("Write Skattemelding: {}", sr.sekvensnummer);
+                        fileWriter.writeSkatteMeldinger(String.format("Sekvensnummer: %s%n", sr.sekvensnummer));
+                        fileWriter.writeSkatteMeldinger(String.format("URL: %s%n", sr.response.url()));
+                        fileWriter.writeSkatteMeldinger(XML.toPrettyXML(sr.response.body()));
+                        fileWriter.writeSkatteMeldinger("---------\n");
+                    }
+                    return null;
+                }).join();
 
         LOG.trace("END");
     }

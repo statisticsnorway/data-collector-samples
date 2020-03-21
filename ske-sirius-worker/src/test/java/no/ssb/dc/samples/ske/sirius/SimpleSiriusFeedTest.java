@@ -54,6 +54,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -70,8 +71,9 @@ class SimpleSiriusFeedTest {
     final static Client client = Client.newClientBuilder().sslContext(getBusinessSSLContext()).build();
     final static String TEST_BASE_URL = "https://api-at.sits.no";
     final static List<Path> writtenFiles = new ArrayList<>();
+    final boolean appendMessages = true;
     final int fromSequence = 1;
-    final int numberOfEvents = 3000;
+    final int numberOfEvents = 500;
 
     static SSLContext getBusinessSSLContext() {
         CertificateFactory factory = CertificateFactory.scanAndCreate(CommonUtils.currentPath());
@@ -190,6 +192,10 @@ class SimpleSiriusFeedTest {
 
         writtenFiles.addAll(fileWriter.positionAndFilenameMap.values());
 
+        if (appendMessages) {
+            fileWriter.appendMessages(fromSequence, numberOfEvents);
+        }
+
         LOG.trace("END");
     }
 
@@ -224,7 +230,7 @@ class SimpleSiriusFeedTest {
 
         void writeHendelseListe(Integer fromSequenceInclusive, Integer toSequenceInclusive, String xml) {
             try {
-                String filename = String.format("%04d-%04d-hendelse-liste-%s.xml", fromSequenceInclusive, toSequenceInclusive, getTimestampAsString());
+                String filename = String.format("%05d-%05d-hendelse-liste-%s.xml", fromSequenceInclusive, toSequenceInclusive, getTimestampAsString());
                 Path filenamePath = outputPath.resolve(filename);
                 if (!Files.exists(filenamePath)) {
                     Files.write(filenamePath, new byte[0], StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
@@ -241,9 +247,9 @@ class SimpleSiriusFeedTest {
         void writeSkatteMelding(Integer sequenceInclusive, String xml) {
             try {
                 if (!positionAndFilenameMap.containsKey(sequenceInclusive.toString())) {
-                    String filename = String.format("%04d-skatte-melding-%s.xml", sequenceInclusive, getTimestampAsString());
+                    String filename = String.format("%05d-skatte-melding-%s.xml", sequenceInclusive, getTimestampAsString());
                     Path filenamePath = outputPath.resolve(filename);
-                    Files.write(filenamePath, new byte[0], StandardOpenOption.CREATE);
+                    Files.write(filenamePath, new byte[0], StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                     positionAndFilenameMap.put(sequenceInclusive.toString(), filenamePath);
                 }
                 Path path = positionAndFilenameMap.get(sequenceInclusive.toString());
@@ -258,6 +264,24 @@ class SimpleSiriusFeedTest {
             }
         }
 
+        void appendMessages(Integer fromSequenceInclusive, Integer toSequenceInclusive) {
+            try {
+                String filename = String.format("%05d-%05d-alle-skattemeldinger-%s-xml.txt", fromSequenceInclusive, toSequenceInclusive, getTimestampAsString());
+                Path filenamePath = outputPath.resolve(filename);
+                Files.write(filenamePath, new byte[0], StandardOpenOption.CREATE);
+                List<Path> files = positionAndFilenameMap.values().stream().skip(1).sorted(Comparator.comparing(Path::toString)).collect(Collectors.toList());
+                BufferedWriter writer = Files.newBufferedWriter(filenamePath, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
+                for(Path file : files) {
+                    String xml = Files.readString(file);
+                    writer.write(xml);
+                }
+                writer.flush();
+                positionAndFilenameMap.put(filename, filenamePath);
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     static class XML {
@@ -312,7 +336,7 @@ class SimpleSiriusFeedTest {
         static String toPrettyXML(byte[] bytes, String comment) {
             Document deserialized = deserialize(bytes);
             insertComment(deserialized, comment);
-            return toPrettyXML(deserialized);
+            return toPrettyXMLWithCommentFix(deserialized);
         }
 
         private static String toPrettyXMLWithCommentFix(Node node) {

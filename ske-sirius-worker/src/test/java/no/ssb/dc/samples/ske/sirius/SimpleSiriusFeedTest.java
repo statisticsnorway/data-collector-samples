@@ -73,13 +73,13 @@ class SimpleSiriusFeedTest {
         return client.send(request);
     }
 
-    Response getSkattemelding(Hendelse hendelse, String identifier, String incomeYear, String snapshot) {
+    CompletableFuture<Response> getSkattemelding(Hendelse hendelse, String identifier, String incomeYear, String snapshot) {
         Request request = Request.newRequestBuilder()
                 .GET()
                 .header("accept", "application/xml")
                 .url(String.format("%s/api/formueinntekt/skattemelding/%s/ssb/%s/%s?gjelderPaaTidspunkt=%s", TEST_BASE_URL, hendelse.value, incomeYear, identifier, snapshot))
                 .build();
-        return client.send(request);
+        return client.sendAsync(request);
     }
 
     @Disabled
@@ -87,7 +87,7 @@ class SimpleSiriusFeedTest {
     @EnumSource(Hendelse.class)
     void getHendelseListe(Hendelse hendelse) throws ExecutionException, InterruptedException {
         FixedThreadPool threadPool = FixedThreadPool.newInstance(20);
-        List<CompletableFuture<Response>> futures = new ArrayList<>();
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
         List<SkattemeldingResponse> responseList = new CopyOnWriteArrayList<>();
 
         FileWriter fileWriter = new FileWriter(CommonUtils.currentPath().resolve("target").resolve("sirius").resolve(hendelse.value));
@@ -108,13 +108,16 @@ class SimpleSiriusFeedTest {
             String gjelderPeriode = element.getElementsByTagName("gjelderPeriode").item(0).getTextContent();
             String registreringstidspunkt = element.getElementsByTagName("registreringstidspunkt").item(0).getTextContent();
 
-            CompletableFuture<Response> requestFuture = CompletableFuture
+            CompletableFuture<Void> requestFuture = CompletableFuture
                     .supplyAsync(() -> {
                         LOG.trace("Get Skattemelding: {}", sekvensnummer);
-                        Response skattemeldingResponse = getSkattemelding(hendelse, identifikator, gjelderPeriode, registreringstidspunkt);
-                        //assertEquals(200, skattemeldingResponse.statusCode());
-                        responseList.add(new SkattemeldingResponse(sekvensnummer, skattemeldingResponse));
-                        return skattemeldingResponse;
+                        getSkattemelding(hendelse, identifikator, gjelderPeriode, registreringstidspunkt)
+                                .thenApply(response -> {
+                                    //assertEquals(200, skattemeldingResponse.statusCode());
+                                    responseList.add(new SkattemeldingResponse(sekvensnummer, response));
+                                    return response;
+                                }).join();
+                        return null;
                     }, threadPool.getExecutor());
 
             futures.add(requestFuture);

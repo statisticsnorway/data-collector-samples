@@ -5,6 +5,7 @@ import no.ssb.dc.api.http.Client;
 import no.ssb.dc.api.http.Request;
 import no.ssb.dc.api.http.Response;
 import no.ssb.dc.api.util.CommonUtils;
+import no.ssb.dc.core.executor.FixedThreadPool;
 import no.ssb.dc.core.security.CertificateContext;
 import no.ssb.dc.core.security.CertificateFactory;
 import org.junit.jupiter.api.Disabled;
@@ -40,7 +41,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -78,7 +86,11 @@ class SimpleSiriusFeedTest {
     @Disabled
     @ParameterizedTest
     @EnumSource(Hendelse.class)
-    void getHendelseListe(Hendelse hendelse) {
+    void getHendelseListe(Hendelse hendelse) throws ExecutionException, InterruptedException {
+        FixedThreadPool threadPool = FixedThreadPool.newInstance(20);
+        List<CompletableFuture<Response>> futures = new ArrayList<>();
+        List<SkattemeldingResponse> responseList = new CopyOnWriteArrayList<>();
+
         FileWriter fileWriter = new FileWriter(CommonUtils.currentPath().resolve("target").resolve("sirius").resolve(hendelse.value));
         fileWriter.writeSkatteMeldinger("---------\n");
 
@@ -87,27 +99,38 @@ class SimpleSiriusFeedTest {
         assertEquals(200, hendelseListeResponse.statusCode());
         Document doc = XML.deserialize(hendelseListeResponse.body());
         fileWriter.writeHendelseListe(XML.toPrettyXML(doc));
-        //LOG.trace("\n{}", XML.toPrettyXML(doc));
 
         NodeList hendelser = doc.getDocumentElement().getElementsByTagName("hendelse");
         for (int i = 0; i < hendelser.getLength(); i++) {
             Element element = (Element) hendelser.item(i);
-            //LOG.trace("{}: {}", i, XML.toPrettyXML(element));
 
             String sekvensnummer = element.getElementsByTagName("sekvensnummer").item(0).getTextContent();
             String identifikator = element.getElementsByTagName("identifikator").item(0).getTextContent();
             String gjelderPeriode = element.getElementsByTagName("gjelderPeriode").item(0).getTextContent();
             String registreringstidspunkt = element.getElementsByTagName("registreringstidspunkt").item(0).getTextContent();
 
-            LOG.trace("Get Skattemelding: {}", sekvensnummer);
-            Response skattemeldingResponse = getSkattemelding(hendelse, identifikator, gjelderPeriode, registreringstidspunkt);
-            //assertEquals(200, skattemeldingResponse.statusCode());
-            fileWriter.writeSkatteMeldinger(String.format("Sekvensnummer: %s%n", sekvensnummer));
-            fileWriter.writeSkatteMeldinger(String.format("URL: %s%n", skattemeldingResponse.url()));
-            fileWriter.writeSkatteMeldinger(XML.toPrettyXML(skattemeldingResponse.body()));
-            fileWriter.writeSkatteMeldinger("---------\n");
-            //LOG.trace("{}: {}\n{}", sekvensnummer, skattemeldingResponse.url(), XML.toPrettyXML(skattemeldingResponse.body()));
+            CompletableFuture<Response> requestFuture = CompletableFuture.supplyAsync(() -> {
+                LOG.trace("Get Skattemelding: {}", sekvensnummer);
+                Response skattemeldingResponse = getSkattemelding(hendelse, identifikator, gjelderPeriode, registreringstidspunkt);
+                //assertEquals(200, skattemeldingResponse.statusCode());
+                responseList.add(new SkattemeldingResponse(sekvensnummer, skattemeldingResponse));
+                return skattemeldingResponse;
+            }, threadPool.getExecutor());
+            futures.add(requestFuture);
         }
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenApply(ignore -> {
+            Collections.sort(responseList, Comparator.comparing(sr -> Integer.parseInt(sr.sekvensnummer)));
+            for (SkattemeldingResponse sr : responseList) {
+                LOG.trace("Write Skattemelding: {}", sr.sekvensnummer);
+                fileWriter.writeSkatteMeldinger(String.format("Sekvensnummer: %s%n", sr.sekvensnummer));
+                fileWriter.writeSkatteMeldinger(String.format("URL: %s%n", sr.response.url()));
+                fileWriter.writeSkatteMeldinger(XML.toPrettyXML(sr.response.body()));
+                fileWriter.writeSkatteMeldinger("---------\n");
+            }
+            return null;
+        }).join();
+
         LOG.trace("END");
     }
 
@@ -119,6 +142,16 @@ class SimpleSiriusFeedTest {
 
         Hendelse(String value) {
             this.value = value;
+        }
+    }
+
+    static class SkattemeldingResponse {
+        final String sekvensnummer;
+        final Response response;
+
+        public SkattemeldingResponse(String sekvensnummer, Response response) {
+            this.sekvensnummer = sekvensnummer;
+            this.response = response;
         }
     }
 
@@ -135,7 +168,7 @@ class SimpleSiriusFeedTest {
             LOG.trace("OutputPath: {}", outputPath.normalize().toString());
             try {
                 Files.createDirectories(outputPath);
-                Files.write(hendelseListeFile, new byte[0],  StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                Files.write(hendelseListeFile, new byte[0], StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                 Files.write(skattemeldingerFile, new byte[0], StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             } catch (IOException e) {
                 throw new RuntimeException(e);

@@ -108,13 +108,15 @@ class SimpleSiriusFeedTest {
             String gjelderPeriode = element.getElementsByTagName("gjelderPeriode").item(0).getTextContent();
             String registreringstidspunkt = element.getElementsByTagName("registreringstidspunkt").item(0).getTextContent();
 
-            CompletableFuture<Response> requestFuture = CompletableFuture.supplyAsync(() -> {
-                LOG.trace("Get Skattemelding: {}", sekvensnummer);
-                Response skattemeldingResponse = getSkattemelding(hendelse, identifikator, gjelderPeriode, registreringstidspunkt);
-                //assertEquals(200, skattemeldingResponse.statusCode());
-                responseList.add(new SkattemeldingResponse(sekvensnummer, skattemeldingResponse));
-                return skattemeldingResponse;
-            }, threadPool.getExecutor());
+            CompletableFuture<Response> requestFuture = CompletableFuture
+                    .supplyAsync(() -> {
+                        LOG.trace("Get Skattemelding: {}", sekvensnummer);
+                        Response skattemeldingResponse = getSkattemelding(hendelse, identifikator, gjelderPeriode, registreringstidspunkt);
+                        //assertEquals(200, skattemeldingResponse.statusCode());
+                        responseList.add(new SkattemeldingResponse(sekvensnummer, skattemeldingResponse));
+                        return skattemeldingResponse;
+                    }, threadPool.getExecutor());
+
             futures.add(requestFuture);
         }
 

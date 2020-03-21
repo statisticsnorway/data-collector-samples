@@ -50,10 +50,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -73,7 +73,7 @@ class SimpleSiriusFeedTest {
     final static List<Path> writtenFiles = new ArrayList<>();
     final boolean appendMessages = true;
     final int fromSequence = 1;
-    final int numberOfEvents = 500;
+    final int numberOfEvents = 3000;
 
     static SSLContext getBusinessSSLContext() {
         CertificateFactory factory = CertificateFactory.scanAndCreate(CommonUtils.currentPath());
@@ -212,7 +212,7 @@ class SimpleSiriusFeedTest {
 
     static class FileWriter {
         private final Path outputPath;
-        private final Map<String, Path> positionAndFilenameMap = new LinkedHashMap<>();
+        private final Map<String, Path> positionAndFilenameMap = new ConcurrentHashMap<>();
 
         FileWriter(Path outputPath) {
             this.outputPath = outputPath;

@@ -269,10 +269,11 @@ class SimpleSiriusFeedTest {
                 String filename = String.format("%05d-%05d-alle-skattemeldinger-%s-xml.txt", fromSequenceInclusive, toSequenceInclusive, getTimestampAsString());
                 Path filenamePath = outputPath.resolve(filename);
                 Files.write(filenamePath, new byte[0], StandardOpenOption.CREATE);
-                List<Path> files = positionAndFilenameMap.values().stream().skip(1).sorted(Comparator.comparing(Path::toString)).collect(Collectors.toList());
+                List<Path> files = positionAndFilenameMap.values().stream().sorted(Comparator.comparing(Path::toString)).skip(1).collect(Collectors.toList());
                 BufferedWriter writer = Files.newBufferedWriter(filenamePath, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
                 for(Path file : files) {
                     String xml = Files.readString(file);
+                    xml = xml.replace("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>", "");
                     writer.write(xml);
                 }
                 writer.flush();

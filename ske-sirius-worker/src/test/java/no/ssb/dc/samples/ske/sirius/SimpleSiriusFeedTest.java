@@ -83,7 +83,7 @@ class SimpleSiriusFeedTest {
 
     @AfterAll
     static void afterAll() {
-        pack();
+        if (!writtenFiles.isEmpty()) pack();
     }
 
     static void pack() {

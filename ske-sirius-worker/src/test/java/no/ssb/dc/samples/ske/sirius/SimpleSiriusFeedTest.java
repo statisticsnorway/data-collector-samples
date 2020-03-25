@@ -1,10 +1,16 @@
 package no.ssb.dc.samples.ske.sirius;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import no.ssb.dc.api.CorrelationIds;
+import no.ssb.dc.api.content.HttpRequestInfo;
+import no.ssb.dc.api.content.MetadataContent;
+import no.ssb.dc.api.context.ExecutionContext;
 import no.ssb.dc.api.handler.QueryException;
 import no.ssb.dc.api.http.Client;
 import no.ssb.dc.api.http.Request;
 import no.ssb.dc.api.http.Response;
 import no.ssb.dc.api.util.CommonUtils;
+import no.ssb.dc.api.util.JsonParser;
 import no.ssb.dc.core.executor.FixedThreadPool;
 import no.ssb.dc.core.security.CertificateContext;
 import no.ssb.dc.core.security.CertificateFactory;
@@ -120,13 +126,13 @@ class SimpleSiriusFeedTest {
         return client.send(request);
     }
 
-    CompletableFuture<Response> getSkattemelding(Hendelse hendelse, String identifier, String incomeYear, String snapshot) {
+    CompletableFuture<RequestAndResponse> getSkattemelding(Hendelse hendelse, String identifier, String incomeYear, String snapshot) {
         Request request = Request.newRequestBuilder()
                 .GET()
                 .header("accept", "application/xml")
                 .url(String.format("%s/api/formueinntekt/skattemelding/%s/ssb/%s/%s?gjelderPaaTidspunkt=%s", TEST_BASE_URL, hendelse.value, incomeYear, identifier, snapshot))
                 .build();
-        return client.sendAsync(request);
+        return CompletableFuture.supplyAsync(() -> new RequestAndResponse(request, client.sendAsync(request)));
     }
 
     @Disabled
@@ -167,19 +173,30 @@ class SimpleSiriusFeedTest {
                     .supplyAsync(() -> {
                         final long past2 = Instant.now().toEpochMilli();
                         getSkattemelding(hendelse, identifikator, gjelderPeriode, registreringstidspunkt)
-                                .thenApply(response -> {
+                                .thenApply(requestAndResponse -> {
                                     //assertEquals(200, skattemeldingResponse.statusCode());
+                                        requestAndResponse.responseFuture.thenApply(response -> {
+                                        StringBuilder comment2 = new StringBuilder();
+                                        comment2.append("\n").append(String.format("   Sekvensnummer: %s%n", sekvensnummer));
+                                        comment2.append(String.format("   URL: %s%n", response.url()));
+                                        long duration2 = (Instant.now().toEpochMilli() - past2);
+                                        comment2.append(String.format("   Request duration: %s%n", duration2));
 
-                                    StringBuilder comment2 = new StringBuilder();
-                                    comment2.append("\n").append(String.format("   Sekvensnummer: %s%n", sekvensnummer));
-                                    comment2.append(String.format("   URL: %s%n", response.url()));
-                                    long duration2 = (Instant.now().toEpochMilli() - past2);
-                                    comment2.append(String.format("   Request duration: %s%n", duration2));
+                                        LOG.trace("Write: {} - duration: {} millis", sekvensnummer, duration2);
+                                        HttpRequestInfo httpRequestInfo = new HttpRequestInfo(
+                                                CorrelationIds.create(ExecutionContext.empty()),
+                                                response.url(),
+                                                response.statusCode(),
+                                                requestAndResponse.request.headers(),
+                                                response.headers(),
+                                                duration2);
+                                        String timestampAsString = FileWriter.getTimestampAsString();
+                                        fileWriter.writeSkattemeldingMetadata(Integer.parseInt(sekvensnummer), httpRequestInfo, response.body(), timestampAsString);
+                                        fileWriter.writeSkatteMelding(Integer.parseInt(sekvensnummer), XML.toPrettyXML(response.body(), comment2.toString()), timestampAsString);
 
-                                    LOG.trace("Write: {} - duration: {} millis", sekvensnummer, duration2);
-                                    fileWriter.writeSkatteMelding(Integer.parseInt(sekvensnummer), XML.toPrettyXML(response.body(), comment2.toString()));
-
-                                    return response;
+                                        return response;
+                                    }).join();
+                                    return null;
                                 }).join();
                         return null;
                     }, threadPool.getExecutor());
@@ -207,6 +224,16 @@ class SimpleSiriusFeedTest {
 
         Hendelse(String value) {
             this.value = value;
+        }
+    }
+
+    static class RequestAndResponse {
+        final Request request;
+        final CompletableFuture<Response> responseFuture;
+
+        public RequestAndResponse(Request request, CompletableFuture<Response> responseFuture) {
+            this.request = request;
+            this.responseFuture = responseFuture;
         }
     }
 
@@ -244,19 +271,40 @@ class SimpleSiriusFeedTest {
             }
         }
 
-        void writeSkatteMelding(Integer sequenceInclusive, String xml) {
+        void writeSkattemeldingMetadata(Integer sequenceInclusive, HttpRequestInfo httpRequestInfo, byte[] content, String timestampAsString) {
+            MetadataContent mc = new MetadataContent.Builder()
+                    .resourceType(MetadataContent.ResourceType.DOCUMENT)
+                    .correlationId(httpRequestInfo.getCorrelationIds())
+                    .url(httpRequestInfo.getUrl())
+                    .statusCode(httpRequestInfo.getStatusCode())
+                    .topic("sirius-person-fastsatt")
+                    .position(sequenceInclusive.toString())
+                    .contentKey("skattemelding")
+                    .contentType(httpRequestInfo.getResponseHeaders().firstValue("content-type").orElseGet(() -> "application/octet-stream"))
+                    .contentLength(content.length)
+                    .requestDurationNanoTime(httpRequestInfo.getRequestDurationNanoSeconds())
+                    .requestHeaders(httpRequestInfo.getRequestHeaders())
+                    .responseHeaders(httpRequestInfo.getResponseHeaders())
+                    .build();
+
             try {
-                if (!positionAndFilenameMap.containsKey(sequenceInclusive.toString())) {
-                    String filename = String.format("%05d-skatte-melding-%s.xml", sequenceInclusive, getTimestampAsString());
-                    Path filenamePath = outputPath.resolve(filename);
-                    Files.write(filenamePath, new byte[0], StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-                    positionAndFilenameMap.put(sequenceInclusive.toString(), filenamePath);
-                }
-                Path path = positionAndFilenameMap.get(sequenceInclusive.toString());
-                if (path == null) {
-                    throw new RuntimeException("File doesn't exist: " + sequenceInclusive);
-                }
-                BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
+                String filename = String.format("%05d-skatte-melding-manifest-%s.json", sequenceInclusive, timestampAsString);
+                Path filenamePath = outputPath.resolve(filename);
+                positionAndFilenameMap.put(sequenceInclusive.toString()+"mf", filenamePath);
+                BufferedWriter writer = Files.newBufferedWriter(filenamePath, StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
+                writer.write(JsonParser.createJsonParser().toPrettyJSON(JsonParser.createJsonParser().fromJson(mc.toJSON(), ObjectNode.class)));
+                writer.flush();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        void writeSkatteMelding(Integer sequenceInclusive, String xml, String timestampAsString) {
+            try {
+                String filename = String.format("%05d-skatte-melding-%s.xml", sequenceInclusive, timestampAsString);
+                Path filenamePath = outputPath.resolve(filename);
+                positionAndFilenameMap.put(sequenceInclusive.toString(), filenamePath);
+                BufferedWriter writer = Files.newBufferedWriter(filenamePath, StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
                 writer.write(xml);
                 writer.flush();
             } catch (IOException e) {
@@ -272,6 +320,7 @@ class SimpleSiriusFeedTest {
                 List<Path> files = positionAndFilenameMap.values().stream().sorted(Comparator.comparing(Path::toString)).skip(1).collect(Collectors.toList());
                 BufferedWriter writer = Files.newBufferedWriter(filenamePath, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
                 for(Path file : files) {
+                    if (file.toString().endsWith(".json")) continue;
                     String xml = Files.readString(file);
                     xml = xml.replace("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>", "");
                     writer.write(xml);

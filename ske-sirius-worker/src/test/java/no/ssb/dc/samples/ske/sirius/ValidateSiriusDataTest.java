@@ -75,6 +75,7 @@ public class ValidateSiriusDataTest {
     // static final String TARGET = "utkast";
     static final String TARGET = "fastsatt";
     static final String TOPIC = "sirius-person-" + TARGET;
+    static final String JDBC_URL = "jdbc:h2:file:/tmp/siriusDb";
 
     @Disabled
     @Order(2)
@@ -206,7 +207,8 @@ public class ValidateSiriusDataTest {
                             break;
                         }
                         if (!hendelse.identifikator.equals(skattemelding.identifikator)) {
-                            LOG.warn("[{}] The Hendelse.identifikator {} with hendelsetype {} DOES NOT match Skattemelding.identifikator: {}", hendelse.sekvensnummer, hendelse.identifikator, hendelse.hendelsetype, skattemelding.identifikator);
+                            LOG.warn("[{}] The Hendelse.identifikator {} with hendelsetype {} DOES NOT match Skattemelding.identifikator: {}",
+                                    hendelse.sekvensnummer, hendelse.identifikator, hendelse.hendelsetype, skattemelding.identifikator);
                         }
                         IdentityHistory newIdentity = new IdentityHistory.Builder()
                                 .fid(UUID.randomUUID().toString())
@@ -220,7 +222,8 @@ public class ValidateSiriusDataTest {
 
                     case IDENTITY_CHANGE:
                         if (identityHistory == null) {
-                            throw new RuntimeException(String.format("[%s] Identity change for %s failed because NO PARENT identity exists!", hendelse.sekvensnummer, hendelse.identifikator));
+                            throw new RuntimeException(String.format("[%s] Identity change for %s failed because NO PARENT identity exists!",
+                                    hendelse.sekvensnummer, hendelse.identifikator));
                         }
                         IdentityHistory identityChange = new IdentityHistory.Builder()
                                 .fid(identityHistory.fid) // map to previous identity.fid
@@ -913,7 +916,7 @@ public class ValidateSiriusDataTest {
         private Connection init() {
             try {
                 Class.forName("org.h2.Driver"); // register
-                Connection conn = DriverManager.getConnection("jdbc:h2:~/siriusDb", "sa", "");
+                Connection conn = DriverManager.getConnection(JDBC_URL, "sa", "");
                 dropOrCreateDatabase(conn);
                 return conn;
             } catch (SQLException | ClassNotFoundException e) {

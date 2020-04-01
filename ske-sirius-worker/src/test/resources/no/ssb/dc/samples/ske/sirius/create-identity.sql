@@ -1,4 +1,4 @@
-INSERT INTO IDENTITY_MAP (fid,
+INSERT INTO IDENTITY_HISTORY (fid,
                           identity,
                           income_year,
                           reg_date,

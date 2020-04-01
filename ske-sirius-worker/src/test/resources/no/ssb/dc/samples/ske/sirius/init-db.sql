@@ -1,5 +1,5 @@
 DROP TABLE IF EXISTS "TAX_RETURN";
-DROP TABLE IF EXISTS "IDENTITY_MAP";
+DROP TABLE IF EXISTS IDENTITY_HISTORY;
 DROP TABLE IF EXISTS "TAX_RETURN_STREAM";
 
 CREATE TABLE "TAX_RETURN"
@@ -18,7 +18,7 @@ CREATE TABLE "TAX_RETURN"
     UNIQUE (feed_identifier, income_year, reg_date)
 );
 
-CREATE TABLE "IDENTITY_MAP"
+CREATE TABLE IDENTITY_HISTORY
 (
     fid         varchar                  NOT NULL,
     identity    varchar                  NOT NULL,

@@ -73,7 +73,7 @@ public class TvinnWorkerTest {
     public void testCollectTvinn() {
         Worker.newBuilder()
                 .configuration(new StoreBasedDynamicConfiguration.Builder()
-                        .values("content.stream.connector", "discarding")
+                        .values("content.stream.connector", "rawdata")
                         .values("rawdata.client.provider", "memory")
                         .values("data.collector.worker.threads", "25")
                         .values("postgres.driver.host", "localhost")

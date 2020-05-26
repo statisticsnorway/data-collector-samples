@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static no.ssb.dc.api.Builders.addContent;
 import static no.ssb.dc.api.Builders.bodyContains;
@@ -93,13 +92,13 @@ public class SiriusWorkerTest {
     @Disabled
     @Test
     public void thatWorkerCollectSiriusData() throws InterruptedException {
-//        Path scanDirectory = CommonUtils.currentPath();
-        Path scanDirectory = Paths.get("/Volumes/SSB BusinessSSL/certs");
+        Path scanDirectory = CommonUtils.currentPath();
+//        Path scanDirectory = Paths.get("/Volumes/SSB BusinessSSL/certs");
 
         Worker.newBuilder()
                 .configuration(new StoreBasedDynamicConfiguration.Builder()
-//                        .values("content.stream.connector", "rawdata")
-                        .values("content.stream.connector", "discarding")
+                        .values("content.stream.connector", "rawdata")
+//                        .values("content.stream.connector", "discarding")
                         .values("rawdata.client.provider", "memory")
                         .values("data.collector.worker.threads", "20")
                         .values("local-temp-folder", "target/_tmp_avro_")

@@ -82,6 +82,7 @@ public class SiriusWorkerTest {
                             .success(200)
                             .success(404, bodyContains(xpath("/feil/kode"), "SM-001"))
                             .success(404, bodyContains(xpath("/feil/kode"), "SM-002"))
+                            .success(410, bodyContains(xpath("/feil/kode"), "SM-013"))
                             .fail(400)
                             .fail(404)
                             .fail(500)

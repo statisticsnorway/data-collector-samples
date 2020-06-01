@@ -29,18 +29,16 @@ public class SimpleMoveItTest {
     private static final Logger LOG = LoggerFactory.getLogger(SimpleMoveItTest.class);
     private static final Client client = Client.newClientBuilder().followRedirects(Client.Redirect.ALWAYS).version(Client.Version.HTTP_1_1).build();
     private static final JsonParser jsonParser = JsonParser.createJsonParser();
+    private static final DynamicConfiguration configuration = new StoreBasedDynamicConfiguration.Builder().propertiesResource("application-ignore.properties").build();
     private static final byte[] AUTHORIZATION_DATA;
 
     static {
-        final DynamicConfiguration configuration = new StoreBasedDynamicConfiguration.Builder()
-                .propertiesResource("application-ignore.properties")
-                .build();
-        AUTHORIZATION_DATA = String.format("grant_type=password&username=%s&password=%s", configuration.evaluateToString("username"), configuration.evaluateToString("password")).getBytes();
+        AUTHORIZATION_DATA = String.format("grant_type=password&username=%s&password=%s", configuration.evaluateToString("moveIt_server_username"), configuration.evaluateToString("moveIt_server_password")).getBytes();
     }
 
     static Response GET(String url, String accessToken) {
         Request request = Request.newRequestBuilder()
-                .url("https://moveitapitest.ssb.no" + url)
+                .url(configuration.evaluateToString("moveIt_server_url") + url)
                 .header("Authorization", "Bearer " + accessToken)
                 .GET()
                 .build();
@@ -52,7 +50,7 @@ public class SimpleMoveItTest {
 
     static Response POST(String url, byte[] payload) {
         Request request = Request.newRequestBuilder()
-                .url("https://moveitapitest.ssb.no" + url)
+                .url(configuration.evaluateToString("moveIt_server_url") + url)
                 .POST(payload)
                 .build();
 
@@ -67,7 +65,7 @@ public class SimpleMoveItTest {
 
     static Response POST(String url, String accessToken, byte[] payload, String contentType) {
         Request.Builder requestBuilder = Request.newRequestBuilder()
-                .url("https://moveitapitest.ssb.no" + url)
+                .url(configuration.evaluateToString("moveIt_server_url") + url)
                 .header("Authorization", "Bearer " + accessToken);
         if (contentType != null) {
             requestBuilder.header("Content-Type", contentType);
@@ -83,7 +81,7 @@ public class SimpleMoveItTest {
 
     static Response POST(String url, String accessToken, Flow.Publisher<ByteBuffer> bodyPublisher, String boundary) {
         Request.Builder requestBuilder = Request.newRequestBuilder()
-                .url("https://moveitapitest.ssb.no" + url)
+                .url(configuration.evaluateToString("moveIt_server_url") + url)
                 .header("Authorization", "Bearer " + accessToken);
         requestBuilder
                 .header("Content-Type", "multipart/form-data;boundary=" + boundary);
@@ -130,7 +128,7 @@ public class SimpleMoveItTest {
 
         Response responseListFiles = GET("/api/v1/files", accessToken);
         JsonNode jsonNode = fromJson(responseListFiles.body());
-        //LOG.trace("{}", toPrettyJSON(jsonNode));
+        LOG.trace("{}", toPrettyJSON(jsonNode));
 
         ArrayNode arrayNodeFileItems = (ArrayNode) jsonNode.get("items");
         for (int i = 0; i < arrayNodeFileItems.size(); i++) {

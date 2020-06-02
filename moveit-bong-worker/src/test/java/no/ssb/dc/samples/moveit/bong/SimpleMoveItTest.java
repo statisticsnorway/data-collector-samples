@@ -126,9 +126,16 @@ public class SimpleMoveItTest {
         Response responseToken = POST("/api/v1/token", AUTHORIZATION_DATA);
         String accessToken = jq(responseToken.body(), ".access_token");
 
-        Response responseListFiles = GET("/api/v1/files", accessToken);
+        Response responseListFolders = GET("/api/v1/folders", accessToken);
+        JsonNode folderNode = fromJson(responseListFolders.body());
+        String folderId = jq(folderNode, ".items[] | select(.path == \"/Home/moveitapi\") | .id");
+        assertEquals("672079599", folderId);
+
+        Response responseListFiles = GET(String.format("/api/v1/folders/%s/files?sortDirection=asc&sortField=uploadStamp&page=2", folderId), accessToken);
         JsonNode jsonNode = fromJson(responseListFiles.body());
         LOG.trace("{}", toPrettyJSON(jsonNode));
+
+        if (true) return;
 
         ArrayNode arrayNodeFileItems = (ArrayNode) jsonNode.get("items");
         for (int i = 0; i < arrayNodeFileItems.size(); i++) {
@@ -142,12 +149,22 @@ public class SimpleMoveItTest {
             Response responseFileInfo = GET("/api/v1/files/" + fileId, accessToken);
             JsonNode fileNode = fromJson(responseFileInfo.body());
             //LOG.trace("{}", toPrettyJSON(fileNode));
-            String folderId = jq(fileNode, ".folderID");
+            folderId = jq(fileNode, ".folderID");
             //LOG.trace("folderID: {}", folderId);
 
             Response download = GET(String.format("/api/v1/folders/%s/files/%s/download", folderId, fileId), accessToken);
             LOG.trace("download: {} -> {}", fileNamePath, new String(download.body()));
+
+            Response downloadFileDetail = GET("/api/v1/files/" + fileId, accessToken);
+            LOG.trace("download file details: {} -> {}", fileNamePath, new String(downloadFileDetail.body()));
+            LOG.trace("");
         }
+
+        Response downloadFolderDetail = GET("/api/v1/folders/" + 672079599, accessToken);
+        LOG.trace("download file details: {} -> {}", "672079599", new String(downloadFolderDetail.body()));
+
+        Response fileDetailsInFolder = GET(String.format("/api/v1/folders/%s/files/%s", "672079599", "674932103"), accessToken);  // foo3.txt
+        LOG.trace("fileDetailsInFolde {} -> {}", "674932103", new String(fileDetailsInFolder.body()));
     }
 
     @Disabled

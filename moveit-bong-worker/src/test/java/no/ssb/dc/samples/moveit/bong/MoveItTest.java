@@ -59,12 +59,17 @@ public class MoveItTest {
                         .header("Accept", "application/xml")
                         .header("Authorization", "Bearer ${accessToken}")
                         .url(serviceURL + "/api/v1/files")
-                        .pipe(sequence(jqpath(".items"))
+                        .pipe(sequence(jqpath(".items[]"))
                                 .expected(jqpath(".id"))
                         )
                 );
 
     }
+
+    /*
+     * TODO
+     * - analyse how to organize the MoveIt cursor
+     */
 
     @Disabled
     @Test

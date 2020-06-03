@@ -36,18 +36,20 @@ public class MoveItTest {
             .values("content.stream.connector", "rawdata")
             .values("rawdata.client.provider", "memory")
             .values("data.collector.worker.threads", "20")
-            .values("data.collector.http.version", "HTTP_1_1")
+            .values("data.collector.http.version", Client.Version.HTTP_1_1.name())
             .values("data.collector.http.followRedirects", Client.Redirect.ALWAYS.name())
             .build();
 
     SpecificationBuilder createSpecification(String serverURL) {
         return Specification.start("MOVEIT", "MoveIt", "authorize")
+                // resume position won't work unless it check state from topic-pages
                 .configure(context()
                         .topic("moveit-bong-test")
                         .variable("baseURL", serverURL)
                         .variable("rootFolder", "/Home/moveitapi")
-                        .variable("nextPage", "${cast.toLong(contentStream.lastOrInitialPosition(0)) + 1}")
+                        .variable("nextPage", "${cast.toLong(contentStream.lastOrInitialPosition(1))}")
                 )
+                // authenticate and get access token
                 .function(post("authorize")
                         .url("${baseURL}/api/v1/token")
                         .data(bodyPublisher()
@@ -58,6 +60,7 @@ public class MoveItTest {
                                 .inputVariable("accessToken", jqpath(".access_token"))
                         )
                 )
+                // resolve root folderId
                 .function(get("find-root-folder")
                         .header("Authorization", "Bearer ${accessToken}")
                         .url("${baseURL}/api/v1/folders")
@@ -67,6 +70,7 @@ public class MoveItTest {
                                 .inputVariable("folderId", jqpath(".items[] | select(.path == \"${rootFolder}\") | .id"))
                         )
                 )
+                // pagination loop
                 .function(paginate("loop")
                         .variable("fromPage", "${nextPage}")
                         .addPageContent("fromPage")
@@ -77,6 +81,7 @@ public class MoveItTest {
                         .prefetchThreshold(150)
                         .until(whenExpressionIsTrue("${nextPage >= totalPages}"))
                 )
+                // get page
                 .function(get("page")
                         .header("Authorization", "Bearer ${accessToken}")
                         .url("${baseURL}/api/v1/folders/${folderId}/files?page=${nextPage}&sortDirection=asc&sortField=uploadStamp")
@@ -103,10 +108,11 @@ public class MoveItTest {
                         )
                         .returnVariables("nextPage", "totalPages")
                 )
+                // download file
                 .function(get("download-file")
                         .header("Authorization", "Bearer ${accessToken}")
                         .url("${baseURL}/api/v1/folders/${folderId}/files/${position}/download")
-                        .validate(status().success(200, 299))
+                        .validate(status().success(200))
                         .pipe(addContent("${position}", "file"))
                 );
     }

@@ -1,4 +1,4 @@
-package no.ssb.dc.samples.moveit.bong;
+package no.ssb.dc.samples.moveit.test;
 
 import no.ssb.config.DynamicConfiguration;
 import no.ssb.config.StoreBasedDynamicConfiguration;
@@ -64,6 +64,7 @@ public class MoveItTest {
                         .topic("moveit-test")
                         .variable("baseURL", serverURL)
                         .variable("rootFolder", "/Home/moveitapi")
+                        .variable("pageSize", "5")
                         .variable("nextPage", "${cast.toLong(contentStream.lastOrInitialPagePosition(1))}") // resume page position
                 )
                 // authenticate and get access token
@@ -95,13 +96,13 @@ public class MoveItTest {
                                 .requiredInput("accessToken")
                                 .requiredInput("folderId")
                         )
-                        .prefetchThreshold(150)
-                        .until(whenExpressionIsTrue("${nextPage >= totalPages}"))
+                        .prefetchThreshold(8)
+                        .until(whenExpressionIsTrue("${nextPage > totalPages}"))
                 )
                 // get page
                 .function(get("page")
                         .header("Authorization", "Bearer ${accessToken}")
-                        .url("${baseURL}/api/v1/folders/${folderId}/files?page=${nextPage}&sortDirection=asc&sortField=uploadStamp")
+                        .url("${baseURL}/api/v1/folders/${folderId}/files?page=${nextPage}&perPage=${pageSize}&sortDirection=asc&sortField=uploadStamp")
                         .validate(status().success(200))
                         .pipe(sequence(jqpath(".items[]"))
                                 .expected(jqpath(".id"))

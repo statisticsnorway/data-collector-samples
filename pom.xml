@@ -46,7 +46,7 @@
     </scm>
 
     <modules>
-        <module>moveit-bong-worker</module>
+        <module>moveit-test-worker</module>
         <module>ske-sirius-worker</module>
         <module>toll-tvinn-worker</module>
     </modules>

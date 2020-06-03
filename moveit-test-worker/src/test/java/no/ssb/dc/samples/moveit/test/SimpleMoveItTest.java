@@ -1,4 +1,4 @@
-package no.ssb.dc.samples.moveit.bong;
+package no.ssb.dc.samples.moveit.test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;

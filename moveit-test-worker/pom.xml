@@ -10,11 +10,11 @@
         <relativePath>..</relativePath>
     </parent>
 
-    <artifactId>data-collector-moveit-bong-worker</artifactId>
+    <artifactId>data-collector-moveit-test-worker</artifactId>
     <packaging>jar</packaging>
 
-    <name>Data Collector Samples MoveIt Bong Worker</name>
-    <description>Data Collector Samples MoveIt Bong Worker</description>
+    <name>Data Collector Samples MoveIt Test Worker</name>
+    <description>Data Collector Samples MoveIt Test Worker</description>
 
     <dependencies>
         <dependency>

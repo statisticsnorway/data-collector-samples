@@ -32,13 +32,16 @@ import static no.ssb.dc.api.Builders.whenExpressionIsTrue;
  * <p>
  * The MoveIt REST API resources is a handle oriented API. There are some limitations to be aware of:
  * <p>
- * - A Folder is identified by a reference-id and the API doesn't provide a specific method that refers to a folder.
+ * - A Folder is identified by a reference-id and the API doesn't provide any specific method that refers to a folder.
  * Henceforth, you need to list all folders from root and filter for folder-name to obtain the reference-id (function: find-root-folder)
  * <p>
  * - A Folder contains Files that must be sorted ascending and by updateTime in order to have a predictable forward cursor
  * <p>
- * - There is no API to obtain what MoveIt Page a given file is found at, thus we have to maintain a page-position.
+ * - There is no API that allows pagination from a specific file, thus we have to maintain a page-position.
  * This may cause re-fetching of already downloaded files when the collection resumes. (function: loop and page)
+ * The preferred (unsupported) strategy would be to specify a file as a starting point and let pagination continue from a given position.
+ * <p>
+ * MoveIt REST API: https://docs.ipswitch.com/MOVEit/Transfer2018/API/rest/
  * <p>
  * Pre-requisite:
  * <p>
@@ -60,6 +63,7 @@ public class MoveItTest {
 
     SpecificationBuilder createSpecification(String serverURL) {
         return Specification.start("MOVEIT-TEST", "MoveIt Test", "authorize")
+                // global configuration
                 .configure(context()
                         .topic("moveit-test")
                         .variable("baseURL", serverURL)
@@ -97,7 +101,7 @@ public class MoveItTest {
                                 .requiredInput("folderId")
                         )
                         .prefetchThreshold(8)
-                        .until(whenExpressionIsTrue("${nextPage > totalPages}"))
+                        .until(whenExpressionIsTrue("${nextPage > totalPages}")) // completion condition
                 )
                 // get page
                 .function(get("page")
@@ -122,7 +126,7 @@ public class MoveItTest {
                                         .inputVariable("path", jqpath(".path"))
                                         .inputVariable("uploadStamp", jqpath(".uploadStamp"))
                                 )
-                                .pipe(publish("${position}"))
+                                .pipe(publish("${position}")) // publish buffered data to rawdata storage
                         )
                         .returnVariables("nextPage", "totalPages") // return next page position cursor
                 )

@@ -27,6 +27,20 @@ import static no.ssb.dc.api.Builders.sequence;
 import static no.ssb.dc.api.Builders.status;
 import static no.ssb.dc.api.Builders.whenExpressionIsTrue;
 
+/**
+ * This test cases demonstrates a generic way to collect files from MoveIt Automation Server.
+ * <p>
+ * The MoveIt REST API resources is a handle oriented API. There are some limitations to be aware of:
+ * <p>
+ * - A Folder is identified by a reference-id and the API doesn't provide a specific method that refers to a folder.
+ * Henceforth, you need to list all folders from root and filter for folder-name to obtain the reference-id (function: find-root-folder)
+ * <p>
+ * - A Folder contains Files that must be sorted ascending and by updateTime in order to have a predictable forward cursor
+ * <p>
+ * - There is no API to obtain what MoveIt Page a given file is found at, thus we have to maintain a page-position.
+ * This may cause re-fetching of already downloaded files when the collection resumes. (function: loop and page)
+ * <p>
+ */
 public class MoveItTest {
 
     static final Logger LOG = LoggerFactory.getLogger(MoveItTest.class);
@@ -41,13 +55,12 @@ public class MoveItTest {
             .build();
 
     SpecificationBuilder createSpecification(String serverURL) {
-        return Specification.start("MOVEIT", "MoveIt", "authorize")
-                // resume position won't work unless it check state from topic-pages
+        return Specification.start("MOVEIT-TEST", "MoveIt Test", "authorize")
                 .configure(context()
-                        .topic("moveit-bong-test")
+                        .topic("moveit-test")
                         .variable("baseURL", serverURL)
                         .variable("rootFolder", "/Home/moveitapi")
-                        .variable("nextPage", "${cast.toLong(contentStream.lastOrInitialPosition(1))}")
+                        .variable("nextPage", "${cast.toLong(contentStream.lastOrInitialPagePosition(1))}") // resume page position
                 )
                 // authenticate and get access token
                 .function(post("authorize")
@@ -72,8 +85,8 @@ public class MoveItTest {
                 )
                 // pagination loop
                 .function(paginate("loop")
-                        .variable("fromPage", "${nextPage}")
-                        .addPageContent("fromPage")
+                        .variable("fromPage", "${nextPage}") // page position cursor
+                        .addPageContent("fromPage") // persist page position
                         .iterate(execute("page")
                                 .requiredInput("accessToken")
                                 .requiredInput("folderId")
@@ -91,7 +104,7 @@ public class MoveItTest {
                         )
                         .pipe(nextPage()
                                 .output("nextPage",
-                                        eval(jqpath(".paging.page"), "lastPage", "${cast.toLong(lastPage) + 1}")
+                                        eval(jqpath(".paging.page"), "lastPage", "${cast.toLong(lastPage) + 1}") // evaluate next page position
                                 )
                                 .output("totalPages", jqpath(".paging.totalPages"))
                         )
@@ -106,7 +119,7 @@ public class MoveItTest {
                                 )
                                 .pipe(publish("${position}"))
                         )
-                        .returnVariables("nextPage", "totalPages")
+                        .returnVariables("nextPage", "totalPages") // return next page position cursor
                 )
                 // download file
                 .function(get("download-file")

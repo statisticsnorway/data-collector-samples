@@ -40,6 +40,10 @@ import static no.ssb.dc.api.Builders.whenExpressionIsTrue;
  * - There is no API to obtain what MoveIt Page a given file is found at, thus we have to maintain a page-position.
  * This may cause re-fetching of already downloaded files when the collection resumes. (function: loop and page)
  * <p>
+ * Pre-requisite:
+ * <p>
+ * Copy 'src/test/resources/application-sample.properties' to 'src/test/resources/application-ignore.properties' and
+ * configure your username and password.
  */
 public class MoveItTest {
 

@@ -24,6 +24,9 @@ import java.util.concurrent.Flow;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * Exploration test
+ */
 public class SimpleMoveItTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleMoveItTest.class);

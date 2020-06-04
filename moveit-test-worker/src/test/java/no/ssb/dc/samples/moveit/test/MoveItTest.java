@@ -75,7 +75,7 @@ public class MoveItTest {
                 .function(post("authorize")
                         .url("${baseURL}/api/v1/token")
                         .data(bodyPublisher()
-                                .plainText("grant_type=password&username=${ENV.moveIt_server_username}&password=${ENV.moveIt_server_password}")
+                                .plainText("grant_type=password&username=${ENV.'moveIt.server.username'}&password=${ENV.'moveIt.server.password'}")
                         )
                         .validate(status().success(200))
                         .pipe(execute("find-root-folder")
@@ -144,7 +144,7 @@ public class MoveItTest {
     void consumeMoveItFiles() {
         Worker.newBuilder()
                 .configuration(configuration.asMap())
-                .specification(createSpecification(configuration.evaluateToString("moveIt_server_url")))
+                .specification(createSpecification(configuration.evaluateToString("moveIt.server.url")))
                 .build()
                 .run();
     }

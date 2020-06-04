@@ -36,12 +36,12 @@ public class SimpleMoveItTest {
     private static final byte[] AUTHORIZATION_DATA;
 
     static {
-        AUTHORIZATION_DATA = String.format("grant_type=password&username=%s&password=%s", configuration.evaluateToString("moveIt_server_username"), configuration.evaluateToString("moveIt_server_password")).getBytes();
+        AUTHORIZATION_DATA = String.format("grant_type=password&username=%s&password=%s", configuration.evaluateToString("moveIt.server.username"), configuration.evaluateToString("moveIt.server.password")).getBytes();
     }
 
     static Response GET(String url, String accessToken) {
         Request request = Request.newRequestBuilder()
-                .url(configuration.evaluateToString("moveIt_server_url") + url)
+                .url(configuration.evaluateToString("moveIt.server.url") + url)
                 .header("Authorization", "Bearer " + accessToken)
                 .GET()
                 .build();
@@ -53,7 +53,7 @@ public class SimpleMoveItTest {
 
     static Response POST(String url, byte[] payload) {
         Request request = Request.newRequestBuilder()
-                .url(configuration.evaluateToString("moveIt_server_url") + url)
+                .url(configuration.evaluateToString("moveIt.server.url") + url)
                 .POST(payload)
                 .build();
 
@@ -68,7 +68,7 @@ public class SimpleMoveItTest {
 
     static Response POST(String url, String accessToken, byte[] payload, String contentType) {
         Request.Builder requestBuilder = Request.newRequestBuilder()
-                .url(configuration.evaluateToString("moveIt_server_url") + url)
+                .url(configuration.evaluateToString("moveIt.server.url") + url)
                 .header("Authorization", "Bearer " + accessToken);
         if (contentType != null) {
             requestBuilder.header("Content-Type", contentType);
@@ -84,7 +84,7 @@ public class SimpleMoveItTest {
 
     static Response POST(String url, String accessToken, Flow.Publisher<ByteBuffer> bodyPublisher, String boundary) {
         Request.Builder requestBuilder = Request.newRequestBuilder()
-                .url(configuration.evaluateToString("moveIt_server_url") + url)
+                .url(configuration.evaluateToString("moveIt.server.url") + url)
                 .header("Authorization", "Bearer " + accessToken);
         requestBuilder
                 .header("Content-Type", "multipart/form-data;boundary=" + boundary);
@@ -134,11 +134,9 @@ public class SimpleMoveItTest {
         String folderId = jq(folderNode, ".items[] | select(.path == \"/Home/moveitapi\") | .id");
         assertEquals("672079599", folderId);
 
-        Response responseListFiles = GET(String.format("/api/v1/folders/%s/files?sortDirection=asc&sortField=uploadStamp&page=2", folderId), accessToken);
+        Response responseListFiles = GET(String.format("/api/v1/folders/%s/files?sortDirection=asc&sortField=uploadStamp&page=1", folderId), accessToken);
         JsonNode jsonNode = fromJson(responseListFiles.body());
         LOG.trace("{}", toPrettyJSON(jsonNode));
-
-        if (true) return;
 
         ArrayNode arrayNodeFileItems = (ArrayNode) jsonNode.get("items");
         for (int i = 0; i < arrayNodeFileItems.size(); i++) {

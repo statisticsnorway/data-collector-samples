@@ -48,9 +48,9 @@ import static no.ssb.dc.api.Builders.whenExpressionIsTrue;
  * Copy 'src/test/resources/application-sample.properties' to 'src/test/resources/application-ignore.properties' and
  * configure your username and password.
  */
-public class MoveItTest {
+public class MoveItDownloadTest {
 
-    static final Logger LOG = LoggerFactory.getLogger(MoveItTest.class);
+    static final Logger LOG = LoggerFactory.getLogger(MoveItDownloadTest.class);
 
     static final DynamicConfiguration configuration = new StoreBasedDynamicConfiguration.Builder()
             .propertiesResource("application-ignore.properties")

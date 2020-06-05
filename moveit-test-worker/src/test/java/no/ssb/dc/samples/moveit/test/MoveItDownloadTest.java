@@ -5,11 +5,16 @@ import no.ssb.config.StoreBasedDynamicConfiguration;
 import no.ssb.dc.api.Specification;
 import no.ssb.dc.api.http.Client;
 import no.ssb.dc.api.node.builder.SpecificationBuilder;
+import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.executor.Worker;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static no.ssb.dc.api.Builders.addContent;
 import static no.ssb.dc.api.Builders.bodyPublisher;
@@ -26,6 +31,7 @@ import static no.ssb.dc.api.Builders.publish;
 import static no.ssb.dc.api.Builders.sequence;
 import static no.ssb.dc.api.Builders.status;
 import static no.ssb.dc.api.Builders.whenExpressionIsTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * This test cases demonstrates a generic way to collect files from MoveIt Automation Server.
@@ -148,4 +154,27 @@ public class MoveItDownloadTest {
                 .build()
                 .run();
     }
+
+    @Test
+    void validateDeserializer() {
+        SpecificationBuilder actualSpecificationBuilder = createSpecification(configuration.evaluateToString("moveIt.server.url"));
+        String serialized = actualSpecificationBuilder.serialize();
+        SpecificationBuilder expectedSpecificationBuilder = Specification.deserialize(serialized);
+        assertEquals(actualSpecificationBuilder, expectedSpecificationBuilder);
+    }
+
+    @Disabled
+    @Test
+    public void writeTargetConsumerSpec() throws IOException {
+        Path currentPath = CommonUtils.currentPath().getParent().getParent();
+        Path targetPath = currentPath.resolve("data-collection-consumer-specifications");
+
+        boolean targetProjectExists = targetPath.toFile().exists();
+        if (!targetProjectExists) {
+            throw new RuntimeException(String.format("Couldn't locate '%s' under currentPath: %s%n", targetPath.toFile().getName(), currentPath.toAbsolutePath().toString()));
+        }
+
+        Files.writeString(targetPath.resolve("specs").resolve("moveit-test-spec.json"), createSpecification(configuration.evaluateToString("moveIt.server.url")).serialize());
+    }
+
 }

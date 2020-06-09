@@ -42,8 +42,10 @@ dependency-reduced-pom.xml
 
 **/target
 
+**/certs/
 **/*certs
 **/*certs.zip
 **/*certs.tgz
 
 **/application-ignore.properties
+**/application-override.properties

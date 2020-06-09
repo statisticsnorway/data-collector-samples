@@ -47,6 +47,7 @@
 
     <modules>
         <module>moveit-test-worker</module>
+        <module>altinn3-test-worker</module>
         <module>ske-sirius-worker</module>
         <module>toll-tvinn-worker</module>
     </modules>

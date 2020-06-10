@@ -116,9 +116,12 @@ public class SimpleAltinn3Test {
             List<MediaType> textMediaTypes = List.of("plain/text", "application/json", "application/xml").stream().map(MediaType::parse).collect(Collectors.toList());
 
             for (JsonNode instance : instanceList) {
-//                String ownerPartyId = jqQueryStringLiteral(instance, ".instanceOwner.partyId");
+                String ownerPartyId = jqQueryStringLiteral(instance, ".instanceOwner.partyId");
                 String instanceId = jqQueryStringLiteral(instance, ".id");
                 List<JsonNode> dataElements = jqQueryList(instance, ".data[]");
+
+                String entryInstanceGuid = instanceId.substring(ownerPartyId.concat("/").length());
+                writeMetadataContent(entryInstanceGuid, JsonParser.createJsonParser().toPrettyJSON(instance).getBytes());
 
                 for (JsonNode dataElement : dataElements) {
                     String dataId = jqQueryStringLiteral(dataElement, ".id");
@@ -242,6 +245,16 @@ public class SimpleAltinn3Test {
         } catch (CertificateEncodingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    void writeMetadataContent(String instanceId, byte[] content) throws IOException {
+        Path contentPath = contentStorePath.resolve(instanceId);
+        if (!contentPath.toFile().exists()) {
+            Files.createDirectories(contentPath);
+        }
+        Path contentFile = contentPath.resolve("instance-metadata.json");
+        LOG.info("Write metadata file: {}", contentFile);
+        Files.write(contentFile, content);
     }
 
     void writeContent(String instanceGuid, String dataId, byte[] content, MediaType mediaType) throws IOException {

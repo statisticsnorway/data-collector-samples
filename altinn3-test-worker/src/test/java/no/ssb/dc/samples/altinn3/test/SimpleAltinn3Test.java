@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -56,11 +55,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class SimpleAltinn3Test {
 
     static final Logger LOG = LoggerFactory.getLogger(SimpleAltinn3Test.class);
-
-    static final String MASKINPORTEN_BASE_ADDRESS = "https://ver2.maskinporten.no";
-    static final String AUTH_BASE_ADDRESS = "https://platform.tt02.altinn.no/authentication/api/v1";
-    static final String API_BASE_ADDRESS = "https://platform.tt02.altinn.no/storage/api/v1";
-    static final Function<String, String> APP_API_BASE_ADDRESS = org -> String.format("https://%s.apps.tt02.altinn.no", org);
 
     static final DynamicConfiguration configuration = new StoreBasedDynamicConfiguration.Builder()
             .propertiesResource("application-override.properties") // gitignored
@@ -110,25 +104,36 @@ public class SimpleAltinn3Test {
         // Request JWT access token from Maskinporten
         String accessToken;
         {
-            String MP_AUTH_URL = MASKINPORTEN_BASE_ADDRESS + "/token";
-            //String AUTH_URL = "https://platform.tt02.altinn.no/authentication/api/v1/exchange/maskinporten";
-
             String payload = String.format("grant_type=%s&assertion=%s", "urn:ietf:params:oauth:grant-type:jwt-bearer", token);
 
             Request request = Request.newRequestBuilder()
-                    .url(MP_AUTH_URL)
+                    .url("https://ver2.maskinporten.no/token")
                     .header("Content-Type", "application/x-www-form-urlencoded")
                     .POST(payload.getBytes())
                     .build();
             Response response = client.send(request);
-            assertEquals(200, response.statusCode()); // VALID JWT REQUEST
+            assertEquals(200, response.statusCode(), getHttpError(response)); // VALID JWT REQUEST
             JsonNode jsonNode = JsonParser.createJsonParser().fromJson(new String(response.body(), StandardCharsets.UTF_8), JsonNode.class);
             accessToken = jsonNode.get("access_token").asText();
         }
         String authorizationBearer = String.format("Bearer %s", accessToken);
         LOG.trace("Authorization: {}", authorizationBearer);
 
-        // Altinn request with  JWT authorization bearer
+        // Replace Maskinporten JWT med Altinn JWT
+        {
+            Request request = Request.newRequestBuilder()
+                    .url("https://platform.tt02.altinn.no/authentication/api/v1/exchange/maskinporten")
+                    .header("Authorization", authorizationBearer)
+                    .GET()
+                    .build();
+            Response response = client.send(request);
+            assertEquals(200, response.statusCode(), getHttpError(response));
+            accessToken = new String(response.body(), StandardCharsets.UTF_8);
+            authorizationBearer = String.format("Bearer %s", accessToken);
+            LOG.trace("Altinn Authorization: {}", authorizationBearer);
+        }
+
+        // Altinn Get Instances
         {
             String url = String.format("https://platform.tt02.altinn.no/storage/api/v1/instances?org=ssb&appId=%s",
                     configuration.evaluateToString("ssb.altinn.app-id"));
@@ -140,7 +145,7 @@ public class SimpleAltinn3Test {
                     .GET()
                     .build();
             Response response = client.send(request);
-            assertEquals(200, response.statusCode(), getHttpError(response)); // TODO: REQUEST FAILS WITH 401
+            assertEquals(200, response.statusCode(), getHttpError(response));
             LOG.trace("GetInstanceData: {}", new String(response.body()));
         }
     }

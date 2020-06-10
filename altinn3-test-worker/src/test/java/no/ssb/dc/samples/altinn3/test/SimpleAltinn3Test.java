@@ -15,12 +15,21 @@ import no.ssb.dc.api.util.JsonParser;
 import no.ssb.dc.core.handler.Queries;
 import no.ssb.dc.core.security.CertificateContext;
 import no.ssb.dc.core.security.CertificateFactory;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.detect.Detector;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -61,10 +70,19 @@ public class SimpleAltinn3Test {
             .build();
 
     static final Client client = Client.newClient();
+    private static Path contentStorePath;
+
+    @BeforeAll
+    static void beforeAll() throws IOException {
+        contentStorePath = CommonUtils.currentPath().resolve("target").resolve("store");
+        if (!contentStorePath.toFile().exists()) {
+            Files.createDirectories(contentStorePath);
+        }
+    }
 
     @Disabled
     @Test
-    void collectAltinnData() {
+    void collectAltinnData() throws IOException {
         String jwtGrant = createMaskinportenJwtGrant(configuration.evaluateToInt("ssb.jwtGrant.expiration"));
 
         // Request JWT access token from Maskinporten
@@ -88,14 +106,45 @@ public class SimpleAltinn3Test {
 
         // Get Instance Data
         {
+            /*
+             * 1. iterer over hver instans
+             * 2. iterer over data element
+             * 3. hent ned dokument
+             */
+            TikaConfig config = TikaConfig.getDefaultConfig();
+            Detector detector = config.getDetector();
+            List<MediaType> textMediaTypes = List.of("plain/text", "application/json", "application/xml").stream().map(MediaType::parse).collect(Collectors.toList());
+
             for (JsonNode instance : instanceList) {
-                String ownerPartyId = jqQueryStringLiteral(instance, ".instanceOwner.partyId");
+//                String ownerPartyId = jqQueryStringLiteral(instance, ".instanceOwner.partyId");
                 String instanceId = jqQueryStringLiteral(instance, ".id");
-                String url = String.format("https://platform.tt02.altinn.no/storage/api/v1/instances/%s/dataelements", instanceId);
-                LOG.trace("Instance-Metadata-URL: {}", url);
-                Response response = doGetRequest(url, jwtReplacementToken);
-                assertEquals(200, response.statusCode(), getHttpError(response));
-                LOG.trace("Instance-Metadata: {} -> {}", instanceId, new String(response.body()));
+                List<JsonNode> dataElements = jqQueryList(instance, ".data[]");
+
+                for (JsonNode dataElement : dataElements) {
+                    String dataId = jqQueryStringLiteral(dataElement, ".id");
+                    String instanceGuid = jqQueryStringLiteral(dataElement, ".instanceGuid");
+                    String url = String.format("https://platform.tt02.altinn.no/storage/api/v1/instances/%s/data/%s", instanceId, dataId);
+                    LOG.trace("Instance-Data-URL: {}", url);
+                    Response response = doGetRequest(url, jwtReplacementToken, "application/xml");
+                    if (response.statusCode() == 500) {
+                        LOG.error("Error: {}", getHttpError(response));
+                        continue;
+                    }
+                    assertEquals(200, response.statusCode(), getHttpError(response));
+
+                    String content = new String(response.body(), StandardCharsets.UTF_8);
+                    MediaType mediaType = detector.detect(new ByteArrayInputStream(content.getBytes()), new Metadata());
+                    /*
+                    boolean isTextContent = textMediaTypes.stream().anyMatch(mediaType::equals);
+                    if (!isTextContent) {
+                        content = new String(Base64.encode(content.getBytes()), StandardCharsets.UTF_8);
+                    }
+
+                    LOG.trace("Instance-Data: {} -- {} -> {}", instanceId, mediaType, content);
+                    */
+
+                    writeContent(instanceGuid, dataId, response.body(), mediaType);
+                }
             }
         }
     }
@@ -195,8 +244,18 @@ public class SimpleAltinn3Test {
         }
     }
 
+    void writeContent(String instanceGuid, String dataId, byte[] content, MediaType mediaType) throws IOException {
+        Path contentPath = contentStorePath.resolve(instanceGuid);
+        if (!contentPath.toFile().exists()) {
+            Files.createDirectories(contentPath);
+        }
+        Path contentFile = contentPath.resolve(dataId + "." + mediaType.getSubtype());
+        LOG.info("Write file: {}", contentFile);
+        Files.write(contentFile, content);
+    }
+
     String getHttpError(Response response) {
         String body = new String(response.body(), StandardCharsets.UTF_8);
-        return String.format("%s %s%s", response.statusCode(), HttpStatus.valueOf(response.statusCode()).reason(), body.isEmpty() ? "" : String.format("%n%s", body));
+        return String.format("%s [%s] %s%s", response.url(), response.statusCode(), HttpStatus.valueOf(response.statusCode()).reason(), body.isEmpty() ? "" : String.format("%n%s", body));
     }
 }

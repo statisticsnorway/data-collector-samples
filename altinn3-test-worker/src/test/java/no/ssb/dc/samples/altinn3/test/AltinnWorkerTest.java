@@ -13,15 +13,20 @@ import no.ssb.dc.api.node.builder.SecurityBuilder;
 import no.ssb.dc.api.node.builder.SpecificationBuilder;
 import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.executor.Worker;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static no.ssb.dc.api.Builders.bodyPublisher;
 import static no.ssb.dc.api.Builders.claims;
+import static no.ssb.dc.api.Builders.execute;
+import static no.ssb.dc.api.Builders.get;
 import static no.ssb.dc.api.Builders.headerClaims;
+import static no.ssb.dc.api.Builders.jqpath;
 import static no.ssb.dc.api.Builders.jwt;
 import static no.ssb.dc.api.Builders.jwtToken;
+import static no.ssb.dc.api.Builders.paginate;
 import static no.ssb.dc.api.Builders.post;
 import static no.ssb.dc.api.Builders.security;
 import static no.ssb.dc.api.Builders.status;
@@ -38,6 +43,7 @@ public class AltinnWorkerTest {
             .build();
 
 
+    @Disabled
     @Test
     void name() {
         JwtBuilder jwtBuilder = Builders.jwt("test",
@@ -60,9 +66,10 @@ public class AltinnWorkerTest {
 //        handler.execute(context);
     }
 
+    @Disabled
     @Test
     void collect() {
-        SpecificationBuilder specificationBuilder = Specification.start("ALTINN-TEST", "Altinn 3", "auth")
+        SpecificationBuilder specificationBuilder = Specification.start("ALTINN-TEST", "Altinn 3", "maskinporten-jwt-grant")
                 .configure(security()
                         .identity(jwt("maskinporten",
                                 headerClaims()
@@ -71,17 +78,34 @@ public class AltinnWorkerTest {
                                 claims()
                                         .audience("https://ver2.maskinporten.no/")
                                         .issuer("d6a6be6e-a3d9-4ab0-97bf-5c5689dd2a83")
-                                        .timeToLiveInSeconds(30)
                                         .claim("resource", "https://tt02.altinn.no/maskinporten-api/")
                                         .claim("scope", "altinn:instances.read altinn:instances.write")
+                                        .timeToLiveInSeconds(30)
                                 )
                         )
-                ).function(post("auth")
+                ).function(post("maskinporten-jwt-grant")
                         .url("https://ver2.maskinporten.no/token/api/v1/token")
                         .data(bodyPublisher()
-                                .urlEncoded(jwtToken().identityId("maskinporten").bindTo("JWT_GRANT").token("grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${JWT_GRANT}"))
+                                .urlEncoded(jwtToken()
+                                        .identityId("maskinporten")
+                                        .bindTo("JWT_GRANT")
+                                        .token("grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${JWT_GRANT}")
+                                )
                         )
                         .validate(status().success(200))
+                        .pipe(execute("altinn-jwt-replacement-token")
+                                .inputVariable("accessToken", jqpath(".access_token"))
+                        )
+                ).function(get("altinn-jwt-replacement-token")
+                        .url("https://platform.tt02.altinn.no/authentication/api/v1/exchange/maskinporten")
+                        .header("Content-Type", "plain/text")
+                        .header("Authorization", "Bearer ${accessToken}")
+                        .pipe(execute("loop")
+//                                .inputVariable("accessToken", regex("."))
+                        )
+                ).function(paginate("loop")
+
+
                 );
 
         String serialized = specificationBuilder.serialize();

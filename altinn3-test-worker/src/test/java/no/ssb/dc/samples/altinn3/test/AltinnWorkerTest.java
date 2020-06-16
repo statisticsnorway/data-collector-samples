@@ -5,18 +5,25 @@ import no.ssb.config.StoreBasedDynamicConfiguration;
 import no.ssb.dc.api.Builders;
 import no.ssb.dc.api.Specification;
 import no.ssb.dc.api.context.ExecutionContext;
-import no.ssb.dc.api.node.Identity;
-import no.ssb.dc.api.node.JwtIdentity;
+import no.ssb.dc.api.node.Configuration;
+import no.ssb.dc.api.node.Configurations;
 import no.ssb.dc.api.node.Security;
+import no.ssb.dc.api.node.builder.BuildContext;
 import no.ssb.dc.api.node.builder.JwtIdentityBuilder;
+import no.ssb.dc.api.node.builder.JwtIdentityTokenBodyPublisherProducerBuilder;
 import no.ssb.dc.api.node.builder.SecurityBuilder;
 import no.ssb.dc.api.node.builder.SpecificationBuilder;
 import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.executor.Worker;
+import no.ssb.dc.core.handler.JwtTokenBodyPublisherProducerHandler;
+import no.ssb.dc.core.security.CertificateFactory;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static no.ssb.dc.api.Builders.addContent;
 import static no.ssb.dc.api.Builders.body;
@@ -38,6 +45,7 @@ import static no.ssb.dc.api.Builders.security;
 import static no.ssb.dc.api.Builders.sequence;
 import static no.ssb.dc.api.Builders.status;
 import static no.ssb.dc.api.Builders.whenVariableIsNull;
+import static no.ssb.dc.api.node.builder.SpecificationBuilder.GLOBAL_CONFIGURATION;
 
 public class AltinnWorkerTest {
 
@@ -53,25 +61,35 @@ public class AltinnWorkerTest {
 
     @Disabled
     @Test
-    void name() {
+    void jwtGrant() {
         JwtIdentityBuilder jwtIdentityBuilder = Builders.jwt("test",
                 headerClaims()
                         .alg("RS256")
-                        .x509CertChain("ssl-test-certs"),
+                        .x509CertChain("ssb-test-certs"),
                 claims()
                         .audience("aud")
+                        .issuer("abcdef")
+                        .timeToLiveInSeconds("30")
         );
-        JwtIdentity jwtIdentity = jwtIdentityBuilder.build();
 
         SecurityBuilder securityBuilder = security();
         securityBuilder.identity(jwtIdentityBuilder);
         Security security = securityBuilder.build();
 
-        ExecutionContext context = ExecutionContext.empty();
-        context.state(Identity.class, security.identities().get(0));
+        LinkedHashMap<String, Object> nodeInstanceById = new LinkedHashMap<>();
+        Map<Class<? extends Configuration>, Configuration> configurationMap = new LinkedHashMap<>();
+        configurationMap.put(Security.class, security);
+        nodeInstanceById.put(GLOBAL_CONFIGURATION, new Configurations(configurationMap));
+        BuildContext buildContext = BuildContext.of(new LinkedHashMap<>(), nodeInstanceById);
 
-//        JwtTokenBodyPublisherProducerHandler handler = new JwtTokenBodyPublisherProducerHandler(jwt);
-//        handler.execute(context);
+        JwtIdentityTokenBodyPublisherProducerBuilder jwtIdentityTokenBuilder = new JwtIdentityTokenBodyPublisherProducerBuilder();
+        jwtIdentityTokenBuilder.identityId("test").bindTo("JWT_GRANT").token("grantType=${JWT_GRANT}");
+
+        JwtTokenBodyPublisherProducerHandler handler = new JwtTokenBodyPublisherProducerHandler(jwtIdentityTokenBuilder.build(buildContext));
+        ExecutionContext context = ExecutionContext.empty();
+        CertificateFactory certificateFactory = CertificateFactory.scanAndCreate(CommonUtils.currentPath());
+        context.services().register(CertificateFactory.class, certificateFactory);
+        handler.execute(context);
     }
 
     @Disabled

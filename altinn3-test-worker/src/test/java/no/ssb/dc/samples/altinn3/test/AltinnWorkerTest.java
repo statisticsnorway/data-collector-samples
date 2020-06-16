@@ -95,7 +95,6 @@ public class AltinnWorkerTest {
     @Disabled
     @Test
     void collect() {
-        // Fix NodeBuilderDeserializer
         SpecificationBuilder specificationBuilder = Specification.start("ALTINN-TEST", "Altinn 3", "maskinporten-jwt-grant")
                 .configure(context()
                         .topic("altinn-test")

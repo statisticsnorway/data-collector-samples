@@ -40,6 +40,7 @@ import static no.ssb.dc.api.Builders.jwtToken;
 import static no.ssb.dc.api.Builders.paginate;
 import static no.ssb.dc.api.Builders.parallel;
 import static no.ssb.dc.api.Builders.post;
+import static no.ssb.dc.api.Builders.publish;
 import static no.ssb.dc.api.Builders.regex;
 import static no.ssb.dc.api.Builders.security;
 import static no.ssb.dc.api.Builders.sequence;
@@ -92,7 +93,7 @@ public class AltinnWorkerTest {
         handler.execute(context);
     }
 
-    @Disabled
+//    @Disabled
     @Test
     void collect() {
         SpecificationBuilder specificationBuilder = Specification.start("ALTINN-TEST", "Altinn 3", "maskinporten-jwt-grant")
@@ -161,6 +162,7 @@ public class AltinnWorkerTest {
                                                 .inputVariable("instanceGuid", jqpath(".instanceGuid"))
                                         )
                                 )
+                                .pipe(publish("${position}"))
                         )
                         .validate(status().success(200))
                 ).function(get("download-file")

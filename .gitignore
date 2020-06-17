@@ -49,3 +49,5 @@ dependency-reduced-pom.xml
 
 **/application-ignore.properties
 **/application-override.properties
+
+**/storage/

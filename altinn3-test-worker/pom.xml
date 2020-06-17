@@ -67,6 +67,13 @@
         </dependency>
 
         <dependency>
+            <groupId>no.ssb.dc</groupId>
+            <artifactId>data-collector-docker</artifactId>
+            <version>0.1-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>1.4.200</version>

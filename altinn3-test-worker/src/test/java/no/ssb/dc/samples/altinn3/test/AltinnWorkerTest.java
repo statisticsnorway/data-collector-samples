@@ -1,5 +1,6 @@
 package no.ssb.dc.samples.altinn3.test;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import no.ssb.config.DynamicConfiguration;
 import no.ssb.config.StoreBasedDynamicConfiguration;
 import no.ssb.dc.api.Builders;
@@ -14,9 +15,13 @@ import no.ssb.dc.api.node.builder.JwtIdentityTokenBodyPublisherProducerBuilder;
 import no.ssb.dc.api.node.builder.SecurityBuilder;
 import no.ssb.dc.api.node.builder.SpecificationBuilder;
 import no.ssb.dc.api.util.CommonUtils;
+import no.ssb.dc.api.util.JsonParser;
 import no.ssb.dc.core.executor.Worker;
 import no.ssb.dc.core.handler.JwtTokenBodyPublisherProducerHandler;
 import no.ssb.dc.core.security.CertificateFactory;
+import no.ssb.dc.test.client.ResponseHelper;
+import no.ssb.dc.test.client.TestClient;
+import no.ssb.dc.test.server.TestServer;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -60,6 +65,9 @@ public class AltinnWorkerTest {
             .values("content.stream.connector", "rawdata")
             .values("rawdata.client.provider", "memory")
             .values("data.collector.worker.threads", "20")
+            .values("data.collector.rawdata.dump.enabled", "true")
+            .values("data.collector.rawdata.dump.location", "")
+            .values("data.collector.rawdata.dump.topic", "altinn-test")
             .build();
 
     static final SpecificationBuilder specificationBuilder = Specification.start("ALTINN-TEST", "Altinn 3", "maskinporten-jwt-grant")
@@ -138,6 +146,7 @@ public class AltinnWorkerTest {
             ).function(get("download-file")
                     .url("https://platform.tt02.altinn.no/storage/api/v1/instances/${ownerPartyId}/${instanceGuid}/data/${dataId}")
                     .header("Authorization", "Bearer ${accessToken}")
+                    .header("Accept", "application/xml")
                     .pipe(addContent("${position}", "file-${dataId}"))
                     .validate(status()
                             .success(200)
@@ -192,6 +201,26 @@ public class AltinnWorkerTest {
                 .build()
                 .run();
 
+    }
+
+    @Disabled
+    @Test
+    void collectAndWriteToOutput() throws InterruptedException {
+        TestServer testServer = TestServer.create(configuration);
+        TestClient testClient = TestClient.create(testServer);
+        testServer.start();
+        testClient.put("/tasks", specificationBuilder.serialize());
+        while(true) {
+            ResponseHelper<String> response = testClient.get("/tasks");
+            ArrayNode list = JsonParser.createJsonParser().fromJson(response.body(), ArrayNode.class);
+            if (list.size() > 0) {
+                Thread.sleep(250);
+                continue;
+            }
+            break;
+        }
+        Thread.sleep(1000);
+        testServer.stop();
     }
 
     @Disabled

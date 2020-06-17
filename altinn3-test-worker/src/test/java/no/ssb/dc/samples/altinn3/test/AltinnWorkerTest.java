@@ -22,6 +22,9 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -59,6 +62,90 @@ public class AltinnWorkerTest {
             .values("data.collector.worker.threads", "20")
             .build();
 
+    static final SpecificationBuilder specificationBuilder = Specification.start("ALTINN-TEST", "Altinn 3", "maskinporten-jwt-grant")
+            .configure(context()
+                    .topic("altinn-test")
+                    .variable("nextPage", null) // TODO ask Altinn about self and next url parameters
+                    .variable("appId", "${ENV.'ssb.altinn.app-id'}")
+                    .variable("clientId", "${ENV.'ssb.altinn.clientId'}")
+                    .variable("jwtGrantTimeToLiveInSeconds", "${ENV.'ssb.jwtGrant.expiration'}")
+            )
+            .configure(security()
+                    .identity(jwt("maskinporten",
+                            headerClaims()
+                                    .alg("RS256")
+                                    .x509CertChain("ssb-test-certs"),
+                            claims()
+                                    .audience("https://ver2.maskinporten.no/")
+                                    .issuer("${clientId}")
+                                    .claim("resource", "https://tt02.altinn.no/maskinporten-api/")
+                                    .claim("scope", "altinn:instances.read altinn:instances.write")
+                                    .timeToLiveInSeconds("${jwtGrantTimeToLiveInSeconds}")
+                            )
+                    )
+            ).function(post("maskinporten-jwt-grant")
+                    .url("https://ver2.maskinporten.no/token/api/v1/token")
+                    .data(bodyPublisher()
+                            .urlEncoded(jwtToken()
+                                    .identityId("maskinporten")
+                                    .bindTo("JWT_GRANT")
+                                    .token("grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${JWT_GRANT}")
+                            )
+                    )
+                    .validate(status().success(200))
+                    .pipe(execute("altinn-jwt-replacement-token")
+                            .inputVariable("accessToken", jqpath(".access_token"))
+                    )
+            ).function(get("altinn-jwt-replacement-token")
+                    .url("https://platform.tt02.altinn.no/authentication/api/v1/exchange/maskinporten")
+                    .header("Content-Type", "plain/text")
+                    .header("Authorization", "Bearer ${accessToken}")
+                    .validate(status().success(200))
+                    .pipe(execute("loop")
+                            .inputVariable("accessToken", body())
+                    )
+            ).function(paginate("loop")
+                    .variable("fromPage", "${nextPage}")
+                    //.addPageContent("fromPage")
+                    .iterate(execute("page")
+                            .requiredInput("accessToken")
+                    )
+                    .until(whenVariableIsNull("nextPage"))
+            ).function(get("page")
+                    .url("https://platform.tt02.altinn.no/storage/api/v1/instances?org=ssb&appId=${appId}")
+                    .header("Authorization", "Bearer ${accessToken}")
+                    .pipe(sequence(jqpath(".instances[]"))
+                            .expected(regex(jqpath(".id"), "([^\\/]+$)"))
+                    )
+                    .pipe(parallel(jqpath(".instances[]"))
+                            .variable("position", regex(jqpath(".id"), "([^\\/]+$)")) // instanceGuid is position
+                            .variable("ownerPartyId", jqpath(".instanceOwner.partyId"))
+                            .pipe(addContent("${position}", "entry"))
+                            .pipe(forEach(jqpath(".data[]"))
+                                    .pipe(execute("download-file")
+                                            .requiredInput("accessToken")
+                                            .inputVariable("dataId", jqpath(".id"))
+                                            .inputVariable("instanceGuid", jqpath(".instanceGuid"))
+                                    )
+                            )
+                            .pipe(publish("${position}"))
+                    )
+                    .validate(status().success(200))
+            ).function(get("download-file")
+                    .url("https://platform.tt02.altinn.no/storage/api/v1/instances/${ownerPartyId}/${instanceGuid}/data/${dataId}")
+                    .header("Authorization", "Bearer ${accessToken}")
+                    .pipe(addContent("${position}", "file-${dataId}")
+                            .storeState("ownerPartyId", "${ownerPartyId}")
+                            .storeState("instanceGuid", "${instanceGuid}")
+                            .storeState("dataId", "${dataId}")
+                            .storeState("ackURL", "https://platform.tt02.altinn.no/storage/api/v1/sbl/instances/${ownerPartyId}/${instanceGuid}")
+                    )
+                    .validate(status()
+                            .success(200)
+                            .success(500) // inconsistent test data causes 500 error
+                            .success(404) // 404 is due to success on 500 error
+                    )
+            );
 
     @Disabled
     @Test
@@ -93,89 +180,9 @@ public class AltinnWorkerTest {
         handler.execute(context);
     }
 
-//    @Disabled
+    @Disabled
     @Test
     void collect() {
-        SpecificationBuilder specificationBuilder = Specification.start("ALTINN-TEST", "Altinn 3", "maskinporten-jwt-grant")
-                .configure(context()
-                        .topic("altinn-test")
-                        .variable("nextPage", null) // TODO ask Altinn about self and next url parameters
-                        .variable("appId", "${ENV.'ssb.altinn.app-id'}")
-                        .variable("clientId", "${ENV.'ssb.altinn.clientId'}")
-                        .variable("jwtGrantTimeToLiveInSeconds", "${ENV.'ssb.jwtGrant.expiration'}")
-                )
-                .configure(security()
-                        .identity(jwt("maskinporten",
-                                headerClaims()
-                                        .alg("RS256")
-                                        .x509CertChain("ssb-test-certs"),
-                                claims()
-                                        .audience("https://ver2.maskinporten.no/")
-                                        .issuer("${clientId}")
-                                        .claim("resource", "https://tt02.altinn.no/maskinporten-api/")
-                                        .claim("scope", "altinn:instances.read altinn:instances.write")
-                                        .timeToLiveInSeconds("${jwtGrantTimeToLiveInSeconds}")
-                                )
-                        )
-                ).function(post("maskinporten-jwt-grant")
-                        .url("https://ver2.maskinporten.no/token/api/v1/token")
-                        .data(bodyPublisher()
-                                .urlEncoded(jwtToken()
-                                        .identityId("maskinporten")
-                                        .bindTo("JWT_GRANT")
-                                        .token("grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${JWT_GRANT}")
-                                )
-                        )
-                        .validate(status().success(200))
-                        .pipe(execute("altinn-jwt-replacement-token")
-                                .inputVariable("accessToken", jqpath(".access_token"))
-                        )
-                ).function(get("altinn-jwt-replacement-token")
-                        .url("https://platform.tt02.altinn.no/authentication/api/v1/exchange/maskinporten")
-                        .header("Content-Type", "plain/text")
-                        .header("Authorization", "Bearer ${accessToken}")
-                        .validate(status().success(200))
-                        .pipe(execute("loop")
-                                .inputVariable("accessToken", body())
-                        )
-                ).function(paginate("loop")
-                        .variable("fromPage", "${nextPage}")
-                        //.addPageContent("fromPage")
-                        .iterate(execute("page")
-                                .requiredInput("accessToken")
-                        )
-                        .until(whenVariableIsNull("nextPage"))
-                ).function(get("page")
-                        .url("https://platform.tt02.altinn.no/storage/api/v1/instances?org=ssb&appId=${appId}")
-                        .header("Authorization", "Bearer ${accessToken}")
-                        .pipe(sequence(jqpath(".instances[]"))
-                                .expected(regex(jqpath(".id"), "([^\\/]+$)"))
-                        )
-                        .pipe(parallel(jqpath(".instances[]"))
-                                .variable("position", regex(jqpath(".id"), "([^\\/]+$)")) // instanceGuid is position
-                                .variable("ownerPartyId", jqpath(".instanceOwner.partyId"))
-                                .pipe(addContent("${position}", "entry"))
-                                .pipe(forEach(jqpath(".data[]"))
-                                        .pipe(execute("download-file")
-                                                .requiredInput("accessToken")
-                                                .inputVariable("dataId", jqpath(".id"))
-                                                .inputVariable("instanceGuid", jqpath(".instanceGuid"))
-                                        )
-                                )
-                                .pipe(publish("${position}"))
-                        )
-                        .validate(status().success(200))
-                ).function(get("download-file")
-                        .url("https://platform.tt02.altinn.no/storage/api/v1/instances/${ownerPartyId}/${instanceGuid}/data/${dataId}")
-                        .header("Authorization", "Bearer ${accessToken}")
-                        .pipe(addContent("${position}", "file-${dataId}"))
-                        .validate(status()
-                                .success(200)
-                                .success(500) // inconsistent test data causes 500 error
-                                .success(404) // 404 is due to success on 500 error
-                        )
-                );
-
         String serialized = specificationBuilder.serialize();
         LOG.trace("{}", serialized);
 
@@ -187,4 +194,19 @@ public class AltinnWorkerTest {
                 .run();
 
     }
+
+    @Disabled
+    @Test
+    public void writeTargetConsumerSpec() throws IOException {
+        Path currentPath = CommonUtils.currentPath().getParent().getParent();
+        Path targetPath = currentPath.resolve("data-collection-consumer-specifications");
+
+        boolean targetProjectExists = targetPath.toFile().exists();
+        if (!targetProjectExists) {
+            throw new RuntimeException(String.format("Couldn't locate '%s' under currentPath: %s%n", targetPath.toFile().getName(), currentPath.toAbsolutePath().toString()));
+        }
+
+        Files.writeString(targetPath.resolve("specs").resolve("altinn3-test-spec.json"), specificationBuilder.serialize());
+    }
+
 }

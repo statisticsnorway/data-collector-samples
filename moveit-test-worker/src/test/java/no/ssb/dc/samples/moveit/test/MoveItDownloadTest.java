@@ -155,6 +155,7 @@ public class MoveItDownloadTest {
                 .run();
     }
 
+    @Disabled
     @Test
     void validateDeserializer() {
         SpecificationBuilder actualSpecificationBuilder = createSpecification(configuration.evaluateToString("moveIt.server.url"));

@@ -3,7 +3,6 @@ package no.ssb.dc.samples.ske.sirius;
 import de.huxhorn.sulky.ulid.ULID;
 import no.ssb.dc.api.Builders;
 import no.ssb.dc.api.ulid.ULIDGenerator;
-import no.ssb.dc.api.ulid.ULIDStateHolder;
 import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.handler.Queries;
 import no.ssb.rawdata.api.RawdataClient;
@@ -483,8 +482,6 @@ public class ValidateSiriusDataTest {
     }
 
     static class TaxReturn {
-        static ULIDStateHolder stateHolder = new ULIDStateHolder();
-
         final UUID ulid;                // unique sortable id
         final String position;          // hendelseliste sekvensnummer
         final int incomeYear;           // hendelseliste income year
@@ -627,7 +624,7 @@ public class ValidateSiriusDataTest {
             }
 
             public TaxReturn build() {
-                ULID.Value ulid = ULIDGenerator.nextMonotonicUlid(stateHolder);
+                ULID.Value ulid = ULIDGenerator.generate();
                 UUID uuid = ULIDGenerator.toUUID(ulid);
                 tick();
                 return new TaxReturn(uuid, position, incomeYear, registrationDate, eventType, feedIdentifier, identifier, shielded, statusCode, errorCode);
@@ -711,8 +708,6 @@ public class ValidateSiriusDataTest {
     }
 
     static class TaxReturnStream {
-        static ULIDStateHolder stateHolder = new ULIDStateHolder();
-
         final UUID ulid;                // unique sortable id
         final String position;
         final String identifier;
@@ -766,7 +761,7 @@ public class ValidateSiriusDataTest {
             }
 
             public TaxReturnStream build() {
-                ULID.Value ulid = ULIDGenerator.nextMonotonicUlid(stateHolder);
+                ULID.Value ulid = ULIDGenerator.generate();
                 UUID uuid = ULIDGenerator.toUUID(ulid);
                 TaxReturn.Builder.tick();
                 return new TaxReturnStream(uuid, position, identifier, incomeYear, registrationDate, shielded);

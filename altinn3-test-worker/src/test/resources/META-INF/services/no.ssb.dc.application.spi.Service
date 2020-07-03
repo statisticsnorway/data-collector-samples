@@ -1,2 +1,2 @@
-no.ssb.dc.server.service.WorkerService
-no.ssb.dc.server.service.RawdataFileSystemService
+no.ssb.dc.server.task.WorkerService
+no.ssb.dc.server.content.RawdataFileSystemService

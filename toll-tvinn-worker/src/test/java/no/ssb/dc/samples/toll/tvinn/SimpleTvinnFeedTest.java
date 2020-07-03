@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SimpleTvinnFeedTest {
 
     final static Logger LOG = LoggerFactory.getLogger(SimpleTvinnFeedTest.class);
-    final static Client client = Client.newClientBuilder().sslContext(getBusinessSSLContext()).build();
     final static String TEST_BASE_URL = "https://api-test.toll.no";
 
     static SSLContext getBusinessSSLContext() {
@@ -27,7 +26,7 @@ public class SimpleTvinnFeedTest {
         return context.sslContext();
     }
 
-    Response getPage(String fromMarker, int numberOfEvents) {
+    Response getPage(Client client, String fromMarker, int numberOfEvents) {
         String url = String.format("%s/api/declaration/declaration-clearance-feed/atom?marker=%s&limit=%s&direction=forward", TEST_BASE_URL, fromMarker, numberOfEvents);
         LOG.info("getPage: {}", url);
         Request request = Request.newRequestBuilder()
@@ -41,8 +40,9 @@ public class SimpleTvinnFeedTest {
     @Disabled
     @Test
     void testFeed() {
+        Client client = Client.newClientBuilder().sslContext(getBusinessSSLContext()).build();
 //        Response response = getPage("last", 1);
-        Response response = getPage("edcdbc20-b1db-4fb4-b6fb-20b5bc2b4516", 25);
+        Response response = getPage(client, "edcdbc20-b1db-4fb4-b6fb-20b5bc2b4516", 25);
         LOG.trace("{}", response.headers().asMap());
         assertEquals(200, response.statusCode());
 //        LOG.trace("{}", new String(response.body()));

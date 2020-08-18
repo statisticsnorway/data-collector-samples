@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static no.ssb.dc.api.Builders.addContent;
 import static no.ssb.dc.api.Builders.context;
@@ -41,8 +42,8 @@ public class FregWorkerTest {
                     .variable("nextSequence", "${cast.toLong(contentStream.lastOrInitialPosition(0)) + 1}")
             )
             .configure(security()
-//                    .sslBundleName("ske-prod-certs")
-                    .sslBundleName("ske-test-certs")
+                    .sslBundleName("ske-prod-certs")
+//                    .sslBundleName("ske-test-certs")
             )
             .function(paginate("loop")
                     .variable("fromSequence", "${nextSequence}")
@@ -52,7 +53,7 @@ public class FregWorkerTest {
                     .until(whenVariableIsNull("nextSequence"))
             )
             .function(get("event-list")
-                    .url("${PlaygroundURL}/folkeregisteret/offentlig-med-hjemmel/api/v1/hendelser/feed/?seq=${fromSequence}")
+                    .url("${ProduksjonURL}/folkeregisteret/offentlig-med-hjemmel/api/v1/hendelser/feed/?seq=${fromSequence}")
                     .validate(status().success(200).fail(400).fail(404).fail(500))
                     .pipe(sequence(xpath("/feed/entry"))
                             .expected(xpath("/entry/content/lagretHendelse/sekvensnummer"))
@@ -76,14 +77,16 @@ public class FregWorkerTest {
                     .returnVariables("nextSequence")
             )
             .function(get("event-document")
-                    .url("${PlaygroundURL}/folkeregisteret/offentlig-med-hjemmel/api/v1/hendelser/${eventId}")
+                    .url("${ProduksjonURL}/folkeregisteret/offentlig-med-hjemmel/api/v1/hendelser/${eventId}")
                     .validate(status().success(200).fail(400).fail(404).fail(500))
                     .pipe(addContent("${position}", "event"))
+//                    .pipe(console())
             )
             .function(get("person-document")
-                    .url("${PlaygroundURL}/folkeregisteret/offentlig-med-hjemmel/api/v1/personer/${personId}")
+                    .url("${ProduksjonURL}/folkeregisteret/offentlig-med-hjemmel/api/v1/personer/${personId}")
                     .validate(status().success(200).fail(400).fail(404).fail(500))
                     .pipe(addContent("${position}", "person"))
+//                    .pipe(console())
             );
 
     @Disabled
@@ -111,8 +114,8 @@ public class FregWorkerTest {
                         .environment("DC_")
                         .build()
                         .asMap())
-//                .buildCertificateFactory(Paths.get("/Volumes/SSB BusinessSSL/certs"))
-                .buildCertificateFactory(CommonUtils.currentPath())
+                .buildCertificateFactory(Paths.get("/Volumes/SSB BusinessSSL/certs"))
+//                .buildCertificateFactory(CommonUtils.currentPath())
                 //.stopAtNumberOfIterations(5)
                 .printConfiguration()
                 .specification(specificationBuilder)

@@ -83,7 +83,7 @@ public class FregWorkerTest {
 //                    .pipe(console())
             )
             .function(get("person-document")
-                    .url("${ProduksjonURL}/folkeregisteret/offentlig-med-hjemmel/api/v1/personer/${personId}")
+                    .url("${ProduksjonURL}/folkeregisteret/offentlig-med-hjemmel/api/v1/personer/${personId}?part=person-basis&part=identitetsgrunnlag-utvidet&part=relasjon-utvidet&part=utlendingsmyndighetenesIdentifikasjonsnummer&part=innflytting&part=utflytting&part=foedselINorge&part=opphold&part=forholdTilSametingetsValgmanntall")
                     .validate(status().success(200).fail(400).fail(404).fail(500))
                     .pipe(addContent("${position}", "person"))
 //                    .pipe(console())

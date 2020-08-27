@@ -57,7 +57,7 @@ jobs:
       inputs:
         mavenPomFile: 'pom.xml'
         goals: 'compile'
-        options: '-P ssb-bip,coverage -DskipTests=true -Dmaven.javadoc.skip=true --batch-mode $(MAVEN_OPTS)'
+        options: '-P ssb-bip -DskipTests=true -Dmaven.javadoc.skip=true --batch-mode $(MAVEN_OPTS)'
         mavenVersionOption: 'Default'
         mavenOptions: '-Xmx3072m'
         mavenAuthenticateFeed: false

@@ -20,11 +20,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Comment;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -40,24 +36,14 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.StringWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -71,7 +57,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * <p>
  * SKE doc: https://skatteetaten.github.io/datasamarbeid-api-dokumentasjon/reference_skattemelding
  */
-class SimpleSiriusFeedTest {
+public class SimpleSiriusFeedTest {
 
     final static Logger LOG = LoggerFactory.getLogger(SimpleSiriusFeedTest.class);
     final static Client client = Client.newClientBuilder().sslContext(getBusinessSSLContext()).build();
@@ -88,7 +74,7 @@ class SimpleSiriusFeedTest {
     }
 
     @AfterAll
-    static void afterAll() {
+    public static void afterAll() {
         if (!writtenFiles.isEmpty()) pack();
     }
 
@@ -138,7 +124,7 @@ class SimpleSiriusFeedTest {
     @Disabled
     @ParameterizedTest
     @EnumSource(Hendelse.class)
-    void getHendelseListe(Hendelse hendelse) {
+    public void getHendelseListe(Hendelse hendelse) {
         FixedThreadPool threadPool = FixedThreadPool.newInstance(20);
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 

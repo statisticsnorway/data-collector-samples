@@ -7,7 +7,7 @@
         <groupId>no.ssb.dc.samples</groupId>
         <artifactId>data-collector-samples</artifactId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath>..</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>data-collector-moveit-test-worker</artifactId>

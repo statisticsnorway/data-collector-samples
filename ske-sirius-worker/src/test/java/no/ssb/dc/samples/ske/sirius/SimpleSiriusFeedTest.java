@@ -60,7 +60,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SimpleSiriusFeedTest {
 
     final static Logger LOG = LoggerFactory.getLogger(SimpleSiriusFeedTest.class);
-    final static Client client = Client.newClientBuilder().sslContext(getBusinessSSLContext()).build();
     final static String TEST_BASE_URL = "https://api-at.sits.no";
     final static List<Path> writtenFiles = new ArrayList<>();
     final boolean appendMessages = true;
@@ -103,7 +102,7 @@ public class SimpleSiriusFeedTest {
         }
     }
 
-    Response getHendelseListe(Hendelse hendelse, int fromSequence, int numberOfEvents) {
+    Response getHendelseListe(Client client, Hendelse hendelse, int fromSequence, int numberOfEvents) {
         Request request = Request.newRequestBuilder()
                 .GET()
                 .header("accept", "application/xml")
@@ -112,7 +111,7 @@ public class SimpleSiriusFeedTest {
         return client.send(request);
     }
 
-    CompletableFuture<RequestAndResponse> getSkattemelding(Hendelse hendelse, String identifier, String incomeYear, String snapshot) {
+    CompletableFuture<RequestAndResponse> getSkattemelding(Client client, Hendelse hendelse, String identifier, String incomeYear, String snapshot) {
         Request request = Request.newRequestBuilder()
                 .GET()
                 .header("accept", "application/xml")
@@ -125,13 +124,15 @@ public class SimpleSiriusFeedTest {
     @ParameterizedTest
     @EnumSource(Hendelse.class)
     public void getHendelseListe(Hendelse hendelse) {
+        Client client = Client.newClientBuilder().sslContext(getBusinessSSLContext()).build();
+
         FixedThreadPool threadPool = FixedThreadPool.newInstance(20);
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         LOG.trace("BEGIN");
 
         final long past = Instant.now().toEpochMilli();
-        Response hendelseListeResponse = getHendelseListe(hendelse, fromSequence, numberOfEvents);
+        Response hendelseListeResponse = getHendelseListe(client, hendelse, fromSequence, numberOfEvents);
         assertEquals(200, hendelseListeResponse.statusCode());
 
         StringBuilder comment = new StringBuilder();
@@ -158,7 +159,7 @@ public class SimpleSiriusFeedTest {
             CompletableFuture<Void> requestFuture = CompletableFuture
                     .supplyAsync(() -> {
                         final long past2 = Instant.now().toEpochMilli();
-                        getSkattemelding(hendelse, identifikator, gjelderPeriode, registreringstidspunkt)
+                        getSkattemelding(client, hendelse, identifikator, gjelderPeriode, registreringstidspunkt)
                                 .thenApply(requestAndResponse -> {
                                     //assertEquals(200, skattemeldingResponse.statusCode());
                                         requestAndResponse.responseFuture.thenApply(response -> {

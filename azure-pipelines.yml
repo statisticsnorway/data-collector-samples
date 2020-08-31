@@ -49,23 +49,6 @@ jobs:
     # Steps in this Job
     steps:
     - template: maven/task-authenticate.yml@templates
-
     - template: maven/task-cache.yml@templates
-
-    - task: Maven@3
-      displayName: 'Maven compile'
-      inputs:
-        mavenPomFile: 'pom.xml'
-        goals: 'compile'
-        options: '-P ssb-bip -DskipTests=true -Dmaven.javadoc.skip=true --batch-mode $(MAVEN_OPTS)'
-        mavenVersionOption: 'Default'
-        mavenOptions: '-Xmx3072m'
-        mavenAuthenticateFeed: false
-        effectivePomSkip: false
-
-    - bash: |
-        ls
     - template: maven/task-test-and-verify.yml@templates
     - template: maven/task-sonar-analyze.yml@templates
-
-    - template: maven/task-install-and-deploy-to-nexus.yml@templates

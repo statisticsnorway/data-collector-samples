@@ -25,11 +25,12 @@ public class EnhetsregisteretWorkerTest {
             .function(paginate("loop")
                     .variable("fromSequence", "${nextSequence}")
                     .addPageContent("fromSequence")
+                    .iterate(execute("enheter"))
                     .prefetchThreshold(1500)
                     .until(whenVariableIsNull("nextSequence")))
 
             .function(get("enheter")
-                    .url("${URL}/enheter/?page${fromSequence}&size=20")
+                    .url("${URL}/enheter/?page=${fromSequence}&size=20")
                     .validate(status().success(200).fail(400).fail(404).fail(500))
 
             );

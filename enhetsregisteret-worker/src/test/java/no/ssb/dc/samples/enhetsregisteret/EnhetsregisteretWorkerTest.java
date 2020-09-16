@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import static no.ssb.dc.api.Builders.*;
 
@@ -56,13 +57,10 @@ public class EnhetsregisteretWorkerTest {
     @Test
     void thatGetFetchOnePage() {
         Worker.newBuilder()
-                .configuration(new StoreBasedDynamicConfiguration.Builder()
-                        .values("content.stream.connector", "rawdata")
-                        .values("rawdata.client.provider", "memory")
-                        .values("data.collector.worker.threads", "20")
-                        .environment("DC_")
-                        .build()
-                        .asMap())
+                .configuration(Map.of(
+                        "content.stream.connector", "rawdata",
+                        "rawdata.client.provider", "memory")
+                )
                 .specification(Builders.get("onePage")
                         .url("https://data.brreg.no/enhetsregisteret/api/enheter/?page=1&size=20")
                         .validate(status().success(200))

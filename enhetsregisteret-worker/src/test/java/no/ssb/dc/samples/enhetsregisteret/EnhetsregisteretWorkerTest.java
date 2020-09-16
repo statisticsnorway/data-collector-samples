@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import static no.ssb.dc.api.Builders.*;
+import static no.ssb.dc.api.Builders.jqpath;
 
 //https://data.brreg.no/enhetsregisteret/api/docs/index.html
 public class EnhetsregisteretWorkerTest {
@@ -47,11 +48,17 @@ public class EnhetsregisteretWorkerTest {
 
             .function(get("enheter-page")
                     .url("${baseURL}/enheter/?page=${fromPage}&size=${pageSize}")
-                    .validate(status().success(200))
-                    .pipe(sequence(jqpath("._embedded.enheter"))
-                            .expected(jqpath(".organisasjonsnummer"))
+                    .pipe(sequence(jqpath("._embedded.enheter[]")))
+                    .pipe(parallel(jqpath("._embedded.enheter[]"))
+                            .variable("organisasjonsnummer", jqpath(".organisasjonsnummer"))
+                            .variable("navn", jqpath(".navn"))
+                            .pipe(addContent("${organisasjonsnummer}", "organisasjonsnummer")
+                                    .storeState("navn", "navn")
+                            )
                     )
                     .pipe(nextPage().output("nextPage", jqpath(".page.number")))
+                    .pipe(publish("${fromPage}"))
+                    .validate(status().success(200))
             );
 
     @Test

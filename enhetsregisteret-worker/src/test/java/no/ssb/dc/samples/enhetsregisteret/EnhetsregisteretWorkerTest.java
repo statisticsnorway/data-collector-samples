@@ -1,14 +1,17 @@
 package no.ssb.dc.samples.enhetsregisteret;
 
+import no.ssb.config.StoreBasedDynamicConfiguration;
 import no.ssb.dc.api.Specification;
 import no.ssb.dc.api.node.builder.SpecificationBuilder;
 import no.ssb.dc.api.util.CommonUtils;
+import no.ssb.dc.core.executor.Worker;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static no.ssb.dc.api.Builders.*;
 
@@ -35,6 +38,25 @@ public class EnhetsregisteretWorkerTest {
 
             );
 
+
+
+    @Test
+    public void thatWorkerCollectEnhetsregisteret() {
+        Worker.newBuilder()
+                .configuration(new StoreBasedDynamicConfiguration.Builder()
+                        .values("content.stream.connector", "rawdata")
+                        .values("rawdata.client.provider", "memory")
+                        .values("data.collector.worker.threads", "20")
+                        .environment("DC_")
+                        .build()
+                        .asMap())
+                //.stopAtNumberOfIterations(5)
+                .printConfiguration()
+                .specification(specificationBuilder)
+                .build()
+                .run();
+
+    }
 
     @Disabled
     @Test

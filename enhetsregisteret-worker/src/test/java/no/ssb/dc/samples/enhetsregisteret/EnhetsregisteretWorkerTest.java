@@ -2,6 +2,7 @@ package no.ssb.dc.samples.enhetsregisteret;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import no.ssb.config.StoreBasedDynamicConfiguration;
+import no.ssb.dc.api.Builders;
 import no.ssb.dc.api.Specification;
 import no.ssb.dc.api.handler.QueryFeature;
 import no.ssb.dc.api.http.Client;
@@ -29,12 +30,12 @@ public class EnhetsregisteretWorkerTest {
 
     static final SpecificationBuilder specificationBuilder = Specification.start("Enhetsregisteret", "Collect enhetsregiseret", "loop-pages-until-done")
             .configure(context()
-                    .topic("api")
-                    .header("accept", "application/json")
-                    .variable("baseURL", "https://data.brreg.no/enhetsregisteret/api")
+                            .topic("api")
+                            .header("accept", "application/json")
+                            .variable("baseURL", "https://data.brreg.no/enhetsregisteret/api")
 //                    .variable("nextPage", "${contentStream.hasLastPosition ? cast.toLong(contentStream.lastPosition) : 0}")
-                    .variable("nextPage", "${cast.toLong(contentStream.lastOrInitialPosition(-1)) + 1}")
-                    .variable("pageSize", "20")
+                            .variable("nextPage", "${cast.toLong(contentStream.lastOrInitialPosition(-1)) + 1}")
+                            .variable("pageSize", "20")
             )
             .function(paginate("loop-pages-until-done")
                     .variable("fromPage", "${nextPage}")
@@ -51,6 +52,26 @@ public class EnhetsregisteretWorkerTest {
                     )
                     .pipe(nextPage().output("nextPage", jqpath(".page.number")))
             );
+
+    @Test
+    void thatGetFetchOnePage() {
+        Worker.newBuilder()
+                .configuration(new StoreBasedDynamicConfiguration.Builder()
+                        .values("content.stream.connector", "rawdata")
+                        .values("rawdata.client.provider", "memory")
+                        .values("data.collector.worker.threads", "20")
+                        .environment("DC_")
+                        .build()
+                        .asMap())
+                .specification(Builders.get("onePage")
+                        .url("https://data.brreg.no/enhetsregisteret/api/enheter/?page=1&size=20")
+                        .validate(status().success(200))
+                        .pipe(console())
+                )
+                .printConfiguration()
+                .build()
+                .run();
+    }
 
     @Test
     void thatEndpointReturnsSomeStuff() {

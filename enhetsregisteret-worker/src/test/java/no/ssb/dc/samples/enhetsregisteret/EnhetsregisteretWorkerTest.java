@@ -76,7 +76,7 @@ public class EnhetsregisteretWorkerTest {
         // fetch page document
         Request request = Request.newRequestBuilder()
                 .GET()
-                .url("https://data.brreg.no/enhetsregisteret/api/enheter/?page=1&size=20")
+                .url("https://data.brreg.no/enhetsregisteret/api/enheter")
                 .build();
         Response response = Client.newClient().send(request);
         JsonParser jsonParser = JsonParser.createJsonParser();
@@ -108,6 +108,7 @@ public class EnhetsregisteretWorkerTest {
                         .values("content.stream.connector", "rawdata")
                         .values("rawdata.client.provider", "memory")
                         .values("data.collector.worker.threads", "20")
+                        .values("local-temp-folder", "target/_tmp_avro_")
                         .environment("DC_")
                         .build()
                         .asMap())
@@ -118,7 +119,7 @@ public class EnhetsregisteretWorkerTest {
                 .run();
     }
 
-    @Disabled
+
     @Test
     public void writeTargetConsumerSpec() throws IOException {
         Path currentPath = CommonUtils.currentPath().getParent().getParent();

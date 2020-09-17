@@ -48,18 +48,41 @@ public class EnhetsregisteretWorkerTest {
 
             .function(get("enheter-page")
                     .url("${baseURL}/enheter/?page=${fromPage}&size=${pageSize}")
-                    .pipe(sequence(jqpath("._embedded.enheter[]")))
-                    .pipe(parallel(jqpath("._embedded.enheter[]"))
-                            .variable("organisasjonsnummer", jqpath(".organisasjonsnummer"))
-                            .variable("navn", jqpath(".navn"))
-                            .pipe(addContent("${organisasjonsnummer}", "organisasjonsnummer")
-                                    .storeState("navn", "navn")
+                    .validate(status().success(200))
+                    .pipe(sequence(jqpath("._embedded.enheter"))
+                            .expected(jqpath(".organisasjonsnummer"))
+                    )
+                    .pipe(nextPage()
+                            .output("nextPage",
+                                    eval(jqpath(".page.number"),
+                                            "currentPageNumber", "${cast.toLong(currentPageNumber)+1}")
                             )
                     )
-                    .pipe(nextPage().output("nextPage", jqpath(".page.number")))
-                    .pipe(publish("${fromPage}"))
-                    .validate(status().success(200))
+                    .pipe(parallel(jqpath("._embedded.enheter"))
+                            .variable("poisiton", jqpath(".organisasjonsnummer"))
+                            .pipe(addContent("${poisiton}","enheter"))
+                            .pipe(publish("${position}"))
+                    )
+                    .returnVariables("nextPage")
             );
+
+
+    @Test
+    public void thatWorkerCollectEnhetsregisteret() {
+        Worker.newBuilder()
+                .configuration(new StoreBasedDynamicConfiguration.Builder()
+                        .values("content.stream.connector", "rawdata")
+                        .values("rawdata.client.provider", "memory")
+                        .values("data.collector.worker.threads", "20")
+                        .environment("DC_")
+                        .build()
+                        .asMap())
+                //.stopAtNumberOfIterations(5)
+                .printConfiguration()
+                .specification(specificationBuilder)
+                .build()
+                .run();
+    }
 
     @Test
     void thatGetFetchOnePage() {
@@ -108,23 +131,6 @@ public class EnhetsregisteretWorkerTest {
         }
     }
 
-    @Test
-    public void thatWorkerCollectEnhetsregisteret() {
-        Worker.newBuilder()
-                .configuration(new StoreBasedDynamicConfiguration.Builder()
-                        .values("content.stream.connector", "rawdata")
-                        .values("rawdata.client.provider", "memory")
-                        .values("data.collector.worker.threads", "20")
-                        .values("local-temp-folder", "target/_tmp_avro_")
-                        .environment("DC_")
-                        .build()
-                        .asMap())
-                //.stopAtNumberOfIterations(5)
-                .printConfiguration()
-                .specification(specificationBuilder)
-                .build()
-                .run();
-    }
 
 
     @Test
@@ -139,4 +145,6 @@ public class EnhetsregisteretWorkerTest {
 
         Files.writeString(targetPath.resolve("specs").resolve("enhetsregisteret-test-spec.json"), specificationBuilder.serialize());
     }
+
+
 }

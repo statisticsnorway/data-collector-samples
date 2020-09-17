@@ -1,6 +1,7 @@
 package no.ssb.dc.samples.enhetsregisteret;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import no.ssb.config.DynamicConfiguration;
 import no.ssb.config.StoreBasedDynamicConfiguration;
 import no.ssb.dc.api.Builders;
 import no.ssb.dc.api.Specification;
@@ -15,6 +16,11 @@ import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.api.util.JsonParser;
 import no.ssb.dc.core.executor.Worker;
 import no.ssb.dc.core.handler.Queries;
+import no.ssb.rawdata.api.RawdataClient;
+import no.ssb.rawdata.api.RawdataClientInitializer;
+import no.ssb.rawdata.api.RawdataConsumer;
+import no.ssb.rawdata.api.RawdataMessage;
+import no.ssb.service.provider.api.ProviderConfigurator;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -23,20 +29,34 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static no.ssb.dc.api.Builders.*;
-import static no.ssb.dc.api.Builders.jqpath;
 
 //https://data.brreg.no/enhetsregisteret/api/docs/index.html
 public class EnhetsregisteretWorkerTest {
 
+    static final DynamicConfiguration configuration = new StoreBasedDynamicConfiguration.Builder()
+            .values("content.stream.connector", "rawdata")
+            .values("rawdata.client.provider", "filesystem")
+            .values("data.collector.worker.threads", "20")
+            .values("rawdata.topic", "enhetsregister")
+            .values("local-temp-folder", "target/avro/temp")
+            .values("filesystem.storage-folder", "target/avro/rawdata-store")
+            .values("avro-file.max.seconds", "60")
+            .values("avro-file.max.bytes", Long.toString(512 * 1024 * 1024)) // 512 MiB
+            .values("avro-file.sync.interval", Long.toString(200))
+            .values("listing.min-interval-seconds", "0")
+            .environment("DC_")
+            .build();
+
     static final SpecificationBuilder specificationBuilder = Specification.start("Enhetsregisteret", "Collect enhetsregiseret", "loop-pages-until-done")
             .configure(context()
-                            .topic("api")
+                            .topic("enhetsregister")
                             .header("accept", "application/json")
                             .variable("baseURL", "https://data.brreg.no/enhetsregisteret/api")
 //                    .variable("nextPage", "${contentStream.hasLastPosition ? cast.toLong(contentStream.lastPosition) : 0}")
-                            .variable("nextPage", "${cast.toLong(contentStream.lastOrInitialPosition(-1)) + 1}")
+                            .variable("nextPage", "${cast.toLong(contentStream.lastOrInitialPagePosition(-1)) + 1}")
                             .variable("pageSize", "20")
             )
             .function(paginate("loop-pages-until-done")
@@ -44,46 +64,52 @@ public class EnhetsregisteretWorkerTest {
                     .addPageContent("fromPage")
                     .iterate(execute("enheter-page"))
                     .prefetchThreshold(30)
-                    .until(whenVariableIsNull("fromPage")))
-
+                    .until(whenVariableIsNull("nextPage"))
+            )
             .function(get("enheter-page")
                     .url("${baseURL}/enheter/?page=${fromPage}&size=${pageSize}")
                     .validate(status().success(200))
-                    .pipe(sequence(jqpath("._embedded.enheter"))
+                    .pipe(sequence(jqpath("._embedded.enheter[]"))
                             .expected(jqpath(".organisasjonsnummer"))
                     )
-                    .pipe(nextPage()
-                            .output("nextPage",
-                                    eval(jqpath(".page.number"),
-                                            "currentPageNumber", "${cast.toLong(currentPageNumber)+1}")
-                            )
+                    .pipe(nextPage().output("nextPage", eval(jqpath(".page.number"), "currentPageNumber", "${cast.toLong(currentPageNumber) + 1}"))
                     )
-                    .pipe(parallel(jqpath("._embedded.enheter"))
-                            .variable("poisiton", jqpath(".organisasjonsnummer"))
-                            .pipe(addContent("${poisiton}","enheter"))
+                    .pipe(parallel(jqpath("._embedded.enheter[]"))
+                            .variable("position", jqpath(".organisasjonsnummer"))
+                            .pipe(addContent("${position}", "enhet"))
                             .pipe(publish("${position}"))
                     )
                     .returnVariables("nextPage")
             );
 
-
+    @Disabled
     @Test
-    public void thatWorkerCollectEnhetsregisteret() {
+    public void thatWorkerCollectEnhetsregisteret() throws InterruptedException {
         Worker.newBuilder()
-                .configuration(new StoreBasedDynamicConfiguration.Builder()
-                        .values("content.stream.connector", "rawdata")
-                        .values("rawdata.client.provider", "memory")
-                        .values("data.collector.worker.threads", "20")
-                        .environment("DC_")
-                        .build()
-                        .asMap())
-                //.stopAtNumberOfIterations(5)
+                .configuration(configuration.asMap())
+                .stopAtNumberOfIterations(5)
                 .printConfiguration()
                 .specification(specificationBuilder)
                 .build()
                 .run();
     }
 
+    @Disabled
+    @Test
+    void consumeLocalRawdataStore() {
+        try (RawdataClient client = ProviderConfigurator.configure(configuration.asMap(), configuration.evaluateToString("rawdata.client.provider"), RawdataClientInitializer.class)) {
+            try (RawdataConsumer consumer = client.consumer(configuration.evaluateToString("rawdata.topic"))) {
+                RawdataMessage message;
+                while ((message = consumer.receive(1, TimeUnit.SECONDS)) != null) {
+                    System.out.printf("position: %s%n--> %s%n", message.position(), new String(message.get("enhet")));
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Disabled
     @Test
     void thatGetFetchOnePage() {
         Worker.newBuilder()
@@ -101,6 +127,7 @@ public class EnhetsregisteretWorkerTest {
                 .run();
     }
 
+    @Disabled
     @Test
     void thatEndpointReturnsSomeStuff() {
         // fetch page document
@@ -131,8 +158,7 @@ public class EnhetsregisteretWorkerTest {
         }
     }
 
-
-
+    @Disabled
     @Test
     public void writeTargetConsumerSpec() throws IOException {
         Path currentPath = CommonUtils.currentPath().getParent().getParent();

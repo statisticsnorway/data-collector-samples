@@ -18,9 +18,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 // https://skatteetaten.github.io/folkeregisteret-api-dokumentasjon/oppslag/
 public class FregSvalbardWithMaskinportenWorkerTest {
 
-    static final SpecificationBuilder specificationBuilder = Specification.start("SKE-FREG-BSRV-KONSUMENT", "Collect FREG Svalbard", "maskinporten-jwt-grant")
+    static final SpecificationBuilder specificationBuilder = Specification.start("SKE-FREG-BRSV-KONSUMENT", "Collect FREG Svalbard", "maskinporten-jwt-grant")
             .configure(context()
-                    .topic("freg-bsrv-konsument-test")
+                    .topic("freg-brsv-konsument-test")
                     .variable("clientId", "${ENV.'ssb.ske.freg.clientId'}")
                     .variable("jwtGrantTimeToLiveInSeconds", "${ENV.'ssb.jwtGrant.expiration'}")
                     .variable("ProdusentTestURL", "https://folkeregisteret-api-ekstern.sits.no")
@@ -70,7 +70,6 @@ public class FregSvalbardWithMaskinportenWorkerTest {
                     .header("Authorization", "Bearer ${accessToken}")
                     .header("accept", "application/xml")
                     .validate(status().success(200))
-//                    .pipe(console())
                     .pipe(sequence(xpath("/feed/entry"))
                             .expected(xpath("/entry/content/lagretHendelse/sekvensnummer"))
                     )
@@ -82,10 +81,6 @@ public class FregSvalbardWithMaskinportenWorkerTest {
                     .pipe(parallel(xpath("/feed/entry"))
                             .variable("position", xpath("/entry/content/lagretHendelse/sekvensnummer"))
                             .pipe(addContent("${position}", "entry"))
-//                            .pipe(execute("event-document")
-//                                    .requiredInput("accessToken")
-//                                    .inputVariable("eventId", xpath("/entry/content/lagretHendelse/hendelse/hendelsesdokument"))
-//                            )
                             .pipe(execute("person-document")
                                     .requiredInput("accessToken")
                                     .inputVariable("personId", xpath("/entry/content/lagretHendelse/hendelse/folkeregisteridentifikator"))
@@ -94,21 +89,12 @@ public class FregSvalbardWithMaskinportenWorkerTest {
                     )
                     .returnVariables("nextSequence")
             )
-            .function(get("event-document")
-                            .url("${KonsumentTestURL}/folkeregisteret/offentlig-med-hjemmel/brsv/api/v1/hendelser/${eventId}")
-                            .header("Authorization", "Bearer ${accessToken}")
-                            .header("accept", "application/xml")
-                            .validate(status().success(200))
-                            .pipe(addContent("${position}", "event"))
-//                    .pipe(console())
-            )
             .function(get("person-document")
-                            .url("${KonsumentTestURL}/folkeregisteret/offentlig-med-hjemmel/api/brsv/v1/personer/${personId}?part=person-basis&part=identitetsgrunnlag-utvidet&part=relasjon-utvidet&part=utlendingsmyndighetenesIdentifikasjonsnummer&part=innflytting&part=utflytting&part=foedselINorge&part=opphold&part=forholdTilSametingetsValgmanntall")
-                            .header("Authorization", "Bearer ${accessToken}")
-                            .header("accept", "application/xml")
-                            .validate(status().success(200))
-                            .pipe(addContent("${position}", "person"))
-//                    .pipe(console())
+                    .url("${KonsumentTestURL}/folkeregisteret/api/brsv/v1/personer/${personId}")
+                    .header("Authorization", "Bearer ${accessToken}")
+                    .header("accept", "application/xml")
+                    .validate(status().success(200).success(404))                     //.pipe(console())
+                    .pipe(addContent("${position}", "person"))
             );
 
     @Disabled
@@ -160,6 +146,6 @@ public class FregSvalbardWithMaskinportenWorkerTest {
             throw new RuntimeException(String.format("Couldn't locate '%s' under currentPath: %s%n", targetPath.toFile().getName(), currentPath.toAbsolutePath().toString()));
         }
 
-        Files.writeString(targetPath.resolve("specs").resolve("ske-freg-playground-spec.json"), specificationBuilder.serialize());
+        Files.writeString(targetPath.resolve("specs").resolve("ske-freg-brsv-konsument-spec.json"), specificationBuilder.serialize());
     }
 }

@@ -70,14 +70,12 @@ public class SimpleFregMaskinportenTest {
         String jwtAccessToken = getMaskinportenJwtAccessToken(jwtGrant);
         LOG.trace("jwtAccessToken: {}", jwtGrant);
 
-        // Get Instances
-        List<JsonNode> instanceList;
         {
             String url = "https://folkeregisteret-api-konsument.sits.no/folkeregisteret/api/brsv/v1/hendelser/feed?seq=1";
             LOG.trace("GetHendelseliste-URL: {}", url);
             Response response = doGetRequest(url, jwtAccessToken);
             assertEquals(200, response.statusCode(), getHttpError(response));
-            LOG.trace("Response: {}", new String(response.body()));
+            LOG.trace("GetResponse: {}", new String(response.body()));
         }
     }
 
@@ -159,6 +157,7 @@ public class SimpleFregMaskinportenTest {
         String payload = String.format("grant_type=%s&assertion=%s", "urn:ietf:params:oauth:grant-type:jwt-bearer", jwtGrant);
         Request request = Request.newRequestBuilder()
                 .url("https://ver2.maskinporten.no/token")
+//                .header("Accept", "application/xml")
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .POST(payload.getBytes())
                 .build();

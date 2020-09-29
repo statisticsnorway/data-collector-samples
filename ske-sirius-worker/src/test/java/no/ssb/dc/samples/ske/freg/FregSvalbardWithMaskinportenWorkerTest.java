@@ -43,7 +43,7 @@ public class FregSvalbardWithMaskinportenWorkerTest {
                     )
             )
             .function(post("maskinporten-jwt-grant")
-                    .url("https://ver2.maskinporten.no/token")
+                    .url("https://ver2.maskinporten.no/token/v1/token")
                     .data(bodyPublisher()
                             .urlEncoded(jwtToken()
                                     .identityId("maskinporten")
@@ -90,11 +90,12 @@ public class FregSvalbardWithMaskinportenWorkerTest {
                     .returnVariables("nextSequence")
             )
             .function(get("person-document")
-                    .url("${KonsumentTestURL}/folkeregisteret/api/brsv/v1/personer/${personId}")
+                    .url("${KonsumentTestURL}/folkeregisteret/api/brsv/v1/personer/${personId}?part=historikk")
                     .header("Authorization", "Bearer ${accessToken}")
                     .header("accept", "application/xml")
-                    .validate(status().success(200).success(404))                     //.pipe(console())
+                    .validate(status().success(200))
                     .pipe(addContent("${position}", "person"))
+                    .pipe(console())
             );
 
     @Disabled

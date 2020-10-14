@@ -54,6 +54,7 @@ public class EnhetsregisteretWorkerTest {
             .configure(context()
                             .topic("enhetsregister")
                             .header("accept", "application/json")
+                            .globalState("MAX_NUMBER_OF_ITERATIONS", "499")
                             .variable("baseURL", "https://data.brreg.no/enhetsregisteret/api")
 //                    .variable("nextPage", "${contentStream.hasLastPosition ? cast.toLong(contentStream.lastPosition) : 0}")
                             .variable("nextPage", "${cast.toLong(contentStream.lastOrInitialPagePosition(-1)) + 1}")

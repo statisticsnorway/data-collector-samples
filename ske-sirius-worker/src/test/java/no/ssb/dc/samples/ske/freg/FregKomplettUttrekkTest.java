@@ -3,10 +3,14 @@ package no.ssb.dc.samples.ske.freg;
 import no.ssb.config.StoreBasedDynamicConfiguration;
 import no.ssb.dc.api.Specification;
 import no.ssb.dc.api.node.builder.SpecificationBuilder;
+import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.core.executor.Worker;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static no.ssb.dc.api.Builders.*;
@@ -19,7 +23,7 @@ public class FregKomplettUttrekkTest {
                     .variable("ProduksjonURL", "https://folkeregisteret.api.skatteetaten.no/folkeregisteret/offentlig-med-hjemmel")
                     .variable("fromFeedSequence", "0")
                     .variable("jobId", "c5d3af2f-4ac7-4506-af67-61e71c5f0b8f")
-                    .variable("nextBatch", "111")
+                    .variable("nextBatch", "0")
             )
             .configure(security()
                     .sslBundleName("ske-prod-certs")
@@ -88,8 +92,22 @@ public class FregKomplettUttrekkTest {
                 .buildCertificateFactory(Paths.get("/Volumes/SSB BusinessSSL/certs"))
                 .printConfiguration()
                 .specification(specificationBuilder)
-//                .stopAtNumberOfIterations(100_000)
+                .stopAtNumberOfIterations(25000)
                 .build()
                 .run();
+    }
+
+    @Disabled
+    @Test
+    public void writeTargetConsumerSpec() throws IOException {
+        Path currentPath = CommonUtils.currentPath().getParent().getParent();
+        Path targetPath = currentPath.resolve("data-collection-consumer-specifications");
+
+        boolean targetProjectExists = targetPath.toFile().exists();
+        if (!targetProjectExists)  {
+            throw new RuntimeException(String.format("Couldn't locate '%s' under currentPath: %s%n", targetPath.toFile().getName(), currentPath.toAbsolutePath().toString()));
+        }
+
+        Files.writeString(targetPath.resolve("specs").resolve("ske-freg-bulk-uttrekk-spec.json"), specificationBuilder.serialize());
     }
 }

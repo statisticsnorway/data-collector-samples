@@ -17,6 +17,8 @@ import javax.net.ssl.SSLContext;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,9 +37,10 @@ public class SimpleFregKomplettUttrekkTest {
     @Test
     void getUttrekkKomplett() throws InterruptedException {
 //        String jobId = createJobIdForUttrekkKomplett();
-        String jobId = "c5d3af2f-4ac7-4506-af67-61e71c5f0b8f";
+//        String jobId = "c5d3af2f-4ac7-4506-af67-61e71c5f0b8f";
+        String jobId = "599a8baf-b7ff-469a-9eca-538a15bf6e97";
 
-        int batchNr = 112;
+        int batchNr = 0;
         List<JsonNode> prevPersonDocumentIdList = null;
         List<JsonNode> personDocumentIdList;
         while (!(personDocumentIdList = getUttrekkBatch(jobId, batchNr)).isEmpty()) {
@@ -55,6 +58,12 @@ public class SimpleFregKomplettUttrekkTest {
 
         Response personDocument = getPersonDocument(lastPersonDocumentId);
         LOG.trace("{}", new String(personDocument.body()));
+    }
+
+    @Test
+    void match404ErrorMessage() {
+        Pattern pattern = Pattern.compile("^(Batch med id=\\d+ er enda ikke klar)$");
+        IntStream.range(0, 150).forEach(i -> assertTrue(pattern.matcher(String.format("Batch med id=%s er enda ikke klar", i)).matches()));
     }
 
     String createJobIdForUttrekkKomplett() {
@@ -76,7 +85,7 @@ public class SimpleFregKomplettUttrekkTest {
         return personDocumentIdList;
     }
 
-    private Response getPersonDocument(String personDocumentId) {
+    Response getPersonDocument(String personDocumentId) {
         Response response = doRequest(String.format("https://folkeregisteret.api.skatteetaten.no/folkeregisteret/offentlig-med-hjemmel/api/v1/personer/arkiv/%s?part=person-basis&part=identitetsgrunnlag-utvidet&part=relasjon-utvidet&part=utlendingsmyndighetenesIdentifikasjonsnummer&part=innflytting&part=utflytting&part=foedselINorge&part=opphold&part=forholdTilSametingetsValgmanntall",
                 personDocumentId),
                 "application/xml"

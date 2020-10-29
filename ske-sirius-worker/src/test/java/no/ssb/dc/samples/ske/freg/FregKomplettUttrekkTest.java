@@ -47,6 +47,7 @@ public class FregKomplettUttrekkTest {
             )
             .function(get("batch-list")
                     .url("${ProduksjonURL}/api/v1/uttrekk/${jobId}/batch/${fromBatch}")
+                    //.retryWhile(status().is(404), TimeUnit.SECONDS, 15)
                     .validate(status().success(200))
                     .pipe(sequence(jqpath(".dokumentidentifikator[]"))
                             .expected(jqpath("."))

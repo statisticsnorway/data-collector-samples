@@ -14,6 +14,8 @@
     <logger name="no.ssb.dc.content" level="TRACE"/>
     <logger name="no.ssb.dc.content.provider.discarding.DiscardingContentStore" level="TRACE"/>
     <logger name="no.ssb.dc.content.provider.discarding.DiscardingContentStreamBuffer" level="NONE"/>
+    <logger name="no.ssb.dc.core.security.CertificateScanner" level="ERROR"/>
+    <logger name="no.ssb.dc.core.security.CertificateFactory" level="ERROR"/>
     <logger name="no.ssb.dc.core.handler.PublishHandler" level="NONE"/>
     <logger name="no.ssb.rawdata.api" level="TRACE"/>
 

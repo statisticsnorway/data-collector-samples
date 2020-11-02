@@ -12,17 +12,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import static no.ssb.dc.api.Builders.*;
 
 public class FregKomplettUttrekkTest {
 
-    static final SpecificationBuilder specificationBuilder = Specification.start("SKE-FREG-UTTREKK-BATCH", "Collect FREG", "loop")
+    static final SpecificationBuilder specificationBuilder = Specification.start("SKE-FREG-UTTREKK-BATCH", "Collect FREG Bulk Uttrekk", "create-job")
             .configure(context()
                     .topic("freg-uttrekk-komplett")
                     .variable("ProduksjonURL", "https://folkeregisteret.api.skatteetaten.no/folkeregisteret/offentlig-med-hjemmel")
                     .variable("fromFeedSequence", "0")
-                    .variable("jobId", "c5d3af2f-4ac7-4506-af67-61e71c5f0b8f")
+//                    .variable("jobId", "c5d3af2f-4ac7-4506-af67-61e71c5f0b8f")
                     .variable("nextBatch", "0")
             )
             .configure(security()
@@ -47,7 +48,7 @@ public class FregKomplettUttrekkTest {
             )
             .function(get("batch-list")
                     .url("${ProduksjonURL}/api/v1/uttrekk/${jobId}/batch/${fromBatch}")
-                    //.retryWhile(status().is(404), TimeUnit.SECONDS, 15)
+                    .retryWhile(statusCode().is(404, TimeUnit.SECONDS, 15))
                     .validate(status().success(200))
                     .pipe(sequence(jqpath(".dokumentidentifikator[]"))
                             .expected(jqpath("."))

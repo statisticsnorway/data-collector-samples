@@ -1,9 +1,11 @@
 package no.ssb.dc.samples.ske.freg;
 
+import no.ssb.config.DynamicConfiguration;
 import no.ssb.config.StoreBasedDynamicConfiguration;
 import no.ssb.dc.api.Specification;
 import no.ssb.dc.api.node.builder.SpecificationBuilder;
 import no.ssb.dc.api.util.CommonUtils;
+import no.ssb.dc.application.ssl.SecretManagerSSLResource;
 import no.ssb.dc.core.executor.Worker;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -92,6 +94,51 @@ public class FregKomplettUttrekkTest {
                         .build()
                         .asMap())
                 .buildCertificateFactory(Paths.get("/Volumes/SSB BusinessSSL/certs"))
+                .printConfiguration()
+                .specification(specificationBuilder)
+                .stopAtNumberOfIterations(25000)
+                .build()
+                .run();
+    }
+
+    @Disabled
+    @Test
+    public void fregUttrekkBatchWithSecretManager() {
+        DynamicConfiguration securityConfiguration = new StoreBasedDynamicConfiguration.Builder()
+                .propertiesResource("application-override.properties")
+                .build();
+
+        DynamicConfiguration configuration = new StoreBasedDynamicConfiguration.Builder()
+                .values("data.collector.worker.threads", "20")
+                .values("content.stream.connector", "rawdata")
+                .values("rawdata.client.provider", "filesystem")
+                .values("filesystem.storage-folder", "target/avro/rawdata-store")
+                .values("local-temp-folder", "target/avro/temp")
+                .values("avro-file.max.seconds", "60")
+                .values("avro-file.max.bytes", "67108864")
+                .values("avro-file.sync.interval", "20")
+                .values("listing.min-interval-seconds", "0")
+                .values("gcs.bucket-name", "")
+                .values("gcs.listing.min-interval-seconds", "30")
+                .values("gcs.service-account.key-file", "")
+                .values("data.collector.sslBundle.provider", "google-secret-manager")
+                .values("data.collector.sslBundle.gcs.projectId", "ssb-team-dapla")
+                .values("data.collector.sslBundle.gcs.serviceAccountKeyPath", GoogleSecretManagerIntegrationTest.getServiceAccountFile(securityConfiguration))
+                .values("data.collector.sslBundle.type", "p12")
+                .values("data.collector.sslBundle.name", "ske-prod-certs")
+                .values("data.collector.sslBundle.archiveCertificate", "ssb-prod-p12-certificate")
+                .values("data.collector.sslBundle.passphrase", "ssb-prod-p12-passphrase")
+                .values("rawdata.encryption.provider", "google-secret-manager")
+                .values("rawdata.encryption.gcp.serviceAccountKeyPath", GoogleSecretManagerIntegrationTest.getServiceAccountFile(securityConfiguration))
+                .values("rawdata.encryption.gcp.projectId", "ssb-team-dapla")
+                .values("rawdata.encryption.key", "rawdata-prod-freg-encryption-key")
+                .values("rawdata.encryption.salt", "rawdata-prod-freg-encryption-salt")
+                .environment("DC_")
+                .build();
+
+        Worker.newBuilder()
+                .configuration(configuration.asMap())
+                .useBusinessSSLResourceSupplier(() -> new SecretManagerSSLResource(configuration))
                 .printConfiguration()
                 .specification(specificationBuilder)
                 .stopAtNumberOfIterations(25000)

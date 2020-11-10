@@ -21,21 +21,25 @@ public class FregSvalbardWithMaskinportenWorkerTest {
     static final SpecificationBuilder specificationBuilder = Specification.start("SKE-FREG-BRSV-KONSUMENT", "Collect FREG Svalbard", "maskinporten-jwt-grant")
             .configure(context()
                     .topic("freg-brsv-konsument-test")
-                    .variable("clientId", "${ENV.'ssb.ske.freg.clientId'}")
+//                    .variable("clientId", "${ENV.'ssb.ske.freg.test.clientId'}")
+                    .variable("clientId", "${ENV.'ssb.ske.freg.prod.clientId'}")
                     .variable("jwtGrantTimeToLiveInSeconds", "${ENV.'ssb.jwtGrant.expiration'}")
-                    .variable("ProdusentTestURL", "https://folkeregisteret-api-ekstern.sits.no")
-                    .variable("KonsumentTestURL", "https://folkeregisteret-api-konsument.sits.no")
-                    .variable("ProduksjonURL", "https://folkeregisteret.api.skatteetaten.no")
                     .variable("PlaygroundURL", "https://folkeregisteret-api-konsument-playground.sits.no")
+                    .variable("KonsumentTestURL", "https://folkeregisteret-api-konsument.sits.no")
+                    .variable("ProdusentTestURL", "https://folkeregisteret-api-ekstern.sits.no")
+                    .variable("ProduksjonURL", "https://folkeregisteret.api.skatteetaten.no")
                     .variable("nextSequence", "${cast.toLong(contentStream.lastOrInitialPosition(0)) + 1}")
             )
             .configure(security()
                     .identity(jwt("maskinporten",
                             headerClaims()
                                     .alg("RS256")
-                                    .x509CertChain("ssb-test-certs"),
+//                                    .x509CertChain("ssb-p12-test-certs"),
+                                    .x509CertChain("ssb-p12-certs"),
                             claims()
-                                    .audience("https://ver2.maskinporten.no/")
+//                                    .audience("https://ver2.maskinporten.no/")
+                                    .audience("https://maskinporten.no/")
+//                                    .issuer("${testClientId}")
                                     .issuer("${clientId}")
                                     .claim("scope", "folkeregister:deling/svalbardregister folkeregister:deling/offentligmedhjemmel")
                                     .timeToLiveInSeconds("${jwtGrantTimeToLiveInSeconds}")
@@ -43,7 +47,8 @@ public class FregSvalbardWithMaskinportenWorkerTest {
                     )
             )
             .function(post("maskinporten-jwt-grant")
-                    .url("https://ver2.maskinporten.no/token/v1/token")
+//                    .url("https://ver2.maskinporten.no/token/v1/token")
+                    .url("https://maskinporten.no/token/v1/token")
                     .data(bodyPublisher()
                             .urlEncoded(jwtToken()
                                     .identityId("maskinporten")
@@ -66,7 +71,8 @@ public class FregSvalbardWithMaskinportenWorkerTest {
                     .until(whenVariableIsNull("nextSequence"))
             )
             .function(get("event-list")
-                    .url("${KonsumentTestURL}/folkeregisteret/api/brsv/v1/hendelser/feed/?seq=${fromSequence}")
+//                    .url("${KonsumentTestURL}/folkeregisteret/api/brsv/v1/hendelser/feed/?seq=${fromSequence}")
+                    .url("${ProdusentTestURL}/folkeregisteret/api/brsv/v1/hendelser/feed/?seq=${fromSequence}")
                     .header("Authorization", "Bearer ${accessToken}")
                     .header("accept", "application/xml")
                     .validate(status().success(200))
@@ -90,7 +96,8 @@ public class FregSvalbardWithMaskinportenWorkerTest {
                     .returnVariables("nextSequence")
             )
             .function(get("person-document")
-                    .url("${KonsumentTestURL}/folkeregisteret/api/brsv/v1/personer/${personId}?part=historikk")
+//                    .url("${KonsumentTestURL}/folkeregisteret/api/brsv/v1/personer/${personId}?part=historikk")
+                    .url("${ProdusentTestURL}/folkeregisteret/api/brsv/v1/personer/${personId}?part=historikk")
                     .header("Authorization", "Bearer ${accessToken}")
                     .header("accept", "application/xml")
                     .validate(status().success(200))
@@ -101,7 +108,7 @@ public class FregSvalbardWithMaskinportenWorkerTest {
     @Disabled
     @Test
     public void thatWorkerCollectFregData() {
-        Path scanDirectory = CommonUtils.currentPath().resolve("pkcs12-certs");
+        Path scanDirectory = CommonUtils.currentPath().resolve("certs");
         assertTrue(scanDirectory.toFile().exists());
         Worker.newBuilder()
                 .configuration(new StoreBasedDynamicConfiguration.Builder()
@@ -133,7 +140,6 @@ public class FregSvalbardWithMaskinportenWorkerTest {
                 .specification(specificationBuilder)
                 .build()
                 .run();
-
     }
 
     @Disabled
@@ -147,6 +153,7 @@ public class FregSvalbardWithMaskinportenWorkerTest {
             throw new RuntimeException(String.format("Couldn't locate '%s' under currentPath: %s%n", targetPath.toFile().getName(), currentPath.toAbsolutePath().toString()));
         }
 
-        Files.writeString(targetPath.resolve("specs").resolve("ske-freg-brsv-konsument-spec.json"), specificationBuilder.serialize());
+//        Files.writeString(targetPath.resolve("specs").resolve("ske-freg-brsv-konsument-spec.json"), specificationBuilder.serialize());
+        Files.writeString(targetPath.resolve("specs").resolve("ske-freg-brsv-prod-spec.json"), specificationBuilder.serialize());
     }
 }

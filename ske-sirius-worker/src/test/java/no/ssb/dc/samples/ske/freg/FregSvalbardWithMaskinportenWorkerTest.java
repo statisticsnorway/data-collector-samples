@@ -72,7 +72,7 @@ public class FregSvalbardWithMaskinportenWorkerTest {
             )
             .function(get("event-list")
 //                    .url("${KonsumentTestURL}/folkeregisteret/api/brsv/v1/hendelser/feed/?seq=${fromSequence}")
-                    .url("${ProdusentTestURL}/folkeregisteret/api/brsv/v1/hendelser/feed/?seq=${fromSequence}")
+                    .url("${ProduksjonURL}/folkeregisteret/api/brsv/v1/hendelser/feed/?seq=${fromSequence}")
                     .header("Authorization", "Bearer ${accessToken}")
                     .header("accept", "application/xml")
                     .validate(status().success(200))
@@ -97,12 +97,11 @@ public class FregSvalbardWithMaskinportenWorkerTest {
             )
             .function(get("person-document")
 //                    .url("${KonsumentTestURL}/folkeregisteret/api/brsv/v1/personer/${personId}?part=historikk")
-                    .url("${ProdusentTestURL}/folkeregisteret/api/brsv/v1/personer/${personId}?part=historikk")
+                    .url("${ProduksjonURL}/folkeregisteret/api/brsv/v1/personer/${personId}?part=historikk")
                     .header("Authorization", "Bearer ${accessToken}")
                     .header("accept", "application/xml")
                     .validate(status().success(200))
                     .pipe(addContent("${position}", "person"))
-                    .pipe(console())
             );
 
     @Disabled

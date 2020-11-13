@@ -43,7 +43,7 @@ public class SimpleFregMaskinportenTest {
     @Disabled
     @Test
     public void collectFregHendelseliste() throws IOException {
-        MaskinportenAuth auth = new MaskinportenAuth(configuration, CommonUtils.currentPath().resolve("pkcs12-certs"), "ssb-test-certs");
+        MaskinportenAuth auth = new MaskinportenAuth(MaskinportenAuth.TEST_MASKINPORTEN_NO, configuration.evaluateToString("ssb.ske.freg.test.clientId"), CommonUtils.currentPath().resolve("pkcs12-certs"), "ssb-test-certs");
         String jwtGrant = auth.createMaskinportenJwtGrant();
         LOG.trace("jwtGrant: {}", jwtGrant);
         String jwtAccessToken = auth.getMaskinportenJwtAccessToken(jwtGrant);

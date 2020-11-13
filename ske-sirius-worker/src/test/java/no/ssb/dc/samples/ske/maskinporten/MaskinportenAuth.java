@@ -3,7 +3,6 @@ package no.ssb.dc.samples.ske.maskinporten;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.JsonNode;
-import no.ssb.config.DynamicConfiguration;
 import no.ssb.dc.api.http.Client;
 import no.ssb.dc.api.http.HttpStatus;
 import no.ssb.dc.api.http.Request;
@@ -37,13 +36,17 @@ public class MaskinportenAuth {
 
     static final Logger LOG = LoggerFactory.getLogger(SimpleFregMaskinportenTest.class);
     static final boolean LOG_ACCESS_TOKENS = false;
+    public static final String TEST_MASKINPORTEN_NO = "https://ver2.maskinporten.no/";
+    public static final String MASKINPORTEN_NO = "https://maskinporten.no/";
 
-    private final DynamicConfiguration configuration;
+    private final String maskinportenURL;
+    private final String clientId;
     private final CertificateContext certificateContext;
     private final Client client;
 
-    public MaskinportenAuth(DynamicConfiguration configuration, Path certsFolder, String sslBundleName) {
-        this.configuration = configuration;
+    public MaskinportenAuth(String maskinportenURL, String clientId, Path certsFolder, String sslBundleName) {
+        this.maskinportenURL = maskinportenURL;
+        this.clientId = clientId;
         // Load BusinessSSL
         assertTrue(certsFolder.toFile().exists());
         CertificateFactory certificateFactory = CertificateFactory.scanAndCreate(certsFolder);
@@ -53,8 +56,16 @@ public class MaskinportenAuth {
         this.client = Client.newClientBuilder().sslContext(certificateContext.sslContext()).build();
     }
 
+    public MaskinportenAuth(String maskinportenURL, String clientId, CertificateContext certificateContext) {
+        this.maskinportenURL = maskinportenURL;
+        this.clientId = clientId;
+        // Load BusinessSSL
+        this.certificateContext = certificateContext;
+        this.client = Client.newClientBuilder().sslContext(certificateContext.sslContext()).build();
+    }
+
     public String createMaskinportenJwtGrant() {
-        return createMaskinportenJwtGrant(configuration.evaluateToInt("ssb.jwtGrant.expiration"));
+        return createMaskinportenJwtGrant(30);
     }
 
     public String createMaskinportenJwtGrant(int expirationInSeconds) {
@@ -76,9 +87,9 @@ public class MaskinportenAuth {
         // Create JWT Grant and Sign
         return JWT.create()
                 .withHeader(headerClaims)
-                .withAudience("https://ver2.maskinporten.no/")
+                .withAudience(MASKINPORTEN_NO)
                 .withClaim("scope", "folkeregister:deling/svalbardregister folkeregister:deling/offentligmedhjemmel")
-                .withIssuer(configuration.evaluateToString("ssb.ske.freg.clientId"))
+                .withIssuer(clientId)
                 .withExpiresAt(Date.from(Instant.now().atOffset(ZoneOffset.UTC).plusSeconds(expirationInSeconds).toInstant()))
                 .withIssuedAt(Date.from(Instant.now().atOffset(ZoneOffset.UTC).toInstant()))
                 .withJWTId(UUID.randomUUID().toString())
@@ -88,7 +99,7 @@ public class MaskinportenAuth {
     public String getMaskinportenJwtAccessToken(String jwtGrant) {
         String payload = String.format("grant_type=%s&assertion=%s", "urn:ietf:params:oauth:grant-type:jwt-bearer", jwtGrant);
         Request request = Request.newRequestBuilder()
-                .url("https://ver2.maskinporten.no/token")
+                .url(MASKINPORTEN_NO+"/token/v1/token")
 //                .header("Accept", "application/xml")
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .POST(payload.getBytes())

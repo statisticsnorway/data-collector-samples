@@ -104,7 +104,7 @@ public class SimpleFregKomplettUttrekkTest {
     }
 
     static String getAccessToken() {
-        MaskinportenAuth auth = new MaskinportenAuth(configuration, Paths.get("/Volumes/SSB BusinessSSL/certs"), "ske-prod-certs");
+        MaskinportenAuth auth = new MaskinportenAuth(MaskinportenAuth.TEST_MASKINPORTEN_NO, configuration.evaluateToString("ssb.ske.freg.test.clientId"), Paths.get("/Volumes/SSB BusinessSSL/certs"), "ske-prod-certs");
         String jwtGrant = auth.createMaskinportenJwtGrant();
         return auth.getMaskinportenJwtAccessToken(jwtGrant);
     }

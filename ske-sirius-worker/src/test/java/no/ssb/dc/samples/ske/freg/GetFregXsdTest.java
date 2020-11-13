@@ -49,12 +49,14 @@ public class GetFregXsdTest {
         authToken.set(getAccessToken());
 
         Request request = Request.newRequestBuilder()
-                .url("https://folkeregisteret.api.skatteetaten.no/folkeregisteret/api/brsv/v1/personer/xsd")
+//                .url("https://folkeregisteret.api.skatteetaten.no/folkeregisteret/api/brsv/v1/personer/xsd")
+                .url("https://folkeregisteret.api.skatteetaten.no/folkeregisteret/api/brsv/v1/hendelser/feed/xsd")
                 .header("Authorization", String.format("Bearer %s", authToken.get()))
                 .GET()
                 .build();
 
-        Path targetFile = CommonUtils.currentPath().resolve("target").resolve("out.xsd");
+//        Path targetFile = CommonUtils.currentPath().resolve("target").resolve("personer-brsv.xsd");
+        Path targetFile = CommonUtils.currentPath().resolve("target").resolve("hendleser-feed.xsd");
         Files.createFile(targetFile);
         Response response = client.send(request, new FileBodyHandler(targetFile));
         assertEquals(200, response.statusCode(), new String(response.body()));

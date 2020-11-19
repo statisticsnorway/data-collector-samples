@@ -26,9 +26,9 @@ public class FregBrsvKomplettUttrekkTest {
 //                    .variable("clientId", "${ENV.'ssb.ske.freg.test.clientId'}")
                     .variable("clientId", "${ENV.'ssb.ske.freg.prod.clientId'}")
                     .variable("jwtGrantTimeToLiveInSeconds", "${ENV.'ssb.jwtGrant.expiration'}")
-                    .variable("ProduksjonURL", "https://folkeregisteret.api.skatteetaten.no/folkeregisteret/offentlig-med-hjemmel")
+                    .variable("ProduksjonURL", "https://folkeregisteret.api.skatteetaten.no/folkeregisteret")
                     .variable("fromFeedSequence", "0")
-//                    .variable("jobId", "c5d3af2f-4ac7-4506-af67-61e71c5f0b8f")
+//                    .variable("jobId", "a4ec090c-a649-4fb2-bbd0-c64f9e522f7b")
                     .variable("nextBatch", "0")
             )
             .configure(security()
@@ -59,6 +59,7 @@ public class FregBrsvKomplettUttrekkTest {
                             )
                             .validate(status().success(200))
                             .pipe(execute("create-job")
+//                            .pipe(execute("loop")
                                     .inputVariable("accessToken", jqpath(".access_token"))
                             )
             )
@@ -66,6 +67,7 @@ public class FregBrsvKomplettUttrekkTest {
                     .url("${ProduksjonURL}/api/brsv/v1/uttrekk/komplett?feedsekvensnr=${fromFeedSequence}")
                     .header("Authorization", "Bearer ${accessToken}")
                     .validate(status().success(200))
+                    .pipe(console())
                     .pipe(execute("loop")
                             .requiredInput("accessToken")
                             .requiredInput("jobId")
@@ -87,7 +89,7 @@ public class FregBrsvKomplettUttrekkTest {
                     .header("Authorization", "Bearer ${accessToken}")
                     .retryWhile(statusCode().is(404, TimeUnit.SECONDS, 15))
                     .validate(status().success(200))
-                    .pipe(console())
+//                    .pipe(console())
                     .pipe(sequence(jqpath(".dokumentidentifikator[]"))
                             .expected(jqpath("."))
                     )
@@ -104,7 +106,7 @@ public class FregBrsvKomplettUttrekkTest {
                     .returnVariables("nextBatch")
             )
             .function(get("person-document")
-                    .url("${ProduksjonURL}/api/brsv/v1/personer/arkiv/${personDocumentId}?part=person-basis&part=identitetsgrunnlag-utvidet&part=relasjon-utvidet&part=utlendingsmyndighetenesIdentifikasjonsnummer&part=innflytting&part=utflytting&part=foedselINorge&part=opphold&part=forholdTilSametingetsValgmanntall")
+                    .url("${ProduksjonURL}/api/brsv/v1/personer/arkiv/${personDocumentId}?part=historikk")
                     .header("Authorization", "Bearer ${accessToken}")
                     .header("Accept", "application/xml")
                     .validate(status().success(200))
@@ -196,6 +198,6 @@ public class FregBrsvKomplettUttrekkTest {
             throw new RuntimeException(String.format("Couldn't locate '%s' under currentPath: %s%n", targetPath.toFile().getName(), currentPath.toAbsolutePath().toString()));
         }
 
-        Files.writeString(targetPath.resolve("specs").resolve("ske-freg-bulk-uttrekk-spec.json"), specificationBuilder.serialize());
+        Files.writeString(targetPath.resolve("specs").resolve("ske-freg-brsv-bulk-uttrekk-spec.json"), specificationBuilder.serialize());
     }
 }

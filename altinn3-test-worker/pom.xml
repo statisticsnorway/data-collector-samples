@@ -30,6 +30,12 @@
         </dependency>
 
         <dependency>
+            <groupId>no.ssb.dapla.secrets</groupId>
+            <artifactId>dapla-secrets-provider-google-secret-manager</artifactId>
+            <version>0.2.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>no.ssb.rawdata</groupId>
             <artifactId>rawdata-client-api</artifactId>
             <version>0.23</version>

@@ -42,11 +42,10 @@ public class AltinnStagingWorkerTest {
 
     static final Logger LOG = LoggerFactory.getLogger(AltinnStagingWorkerTest.class);
 
-    static final DynamicConfiguration securityConfiguration = new StoreBasedDynamicConfiguration.Builder()
-            .propertiesResource("application-override.properties")
-            .build();
+    static final StoreBasedDynamicConfiguration.Builder securityConfiguration = new StoreBasedDynamicConfiguration.Builder()
+            .propertiesResource("application-override.properties");
 
-    static final DynamicConfiguration configuration = new StoreBasedDynamicConfiguration.Builder()
+    static final StoreBasedDynamicConfiguration.Builder configurationBuilder = new StoreBasedDynamicConfiguration.Builder()
             .propertiesResource("application-override.properties") // gitignored
             .values("content.stream.connector", "rawdata")
             .values("rawdata.client.provider", "memory")
@@ -57,17 +56,16 @@ public class AltinnStagingWorkerTest {
 
             .values("data.collector.sslBundle.provider", "google-secret-manager")
             .values("data.collector.sslBundle.gcp.projectId", "ssb-team-dapla")
-            .values("data.collector.sslBundle.gcp.serviceAccountKeyPath", getServiceAccountFile(securityConfiguration))
+            .values("data.collector.sslBundle.gcp.serviceAccountKeyPath", getServiceAccountFile(securityConfiguration.build()))
             .values("data.collector.sslBundle.type", "p12")
             .values("data.collector.sslBundle.name", "ssb-test-certs")
             .values("data.collector.sslBundle.archiveCertificate", "ssb-test-p12-certificate")
             .values("data.collector.sslBundle.passphrase", "ssb-test-p12-passphrase")
             .values("rawdata.encryption.provider", "google-secret-manager")
-            .values("rawdata.encryption.gcp.serviceAccountKeyPath", getServiceAccountFile(securityConfiguration))
+            .values("rawdata.encryption.gcp.serviceAccountKeyPath", getServiceAccountFile(securityConfiguration.build()))
             .values("rawdata.encryption.gcp.projectId", "ssb-team-dapla")
             .values("rawdata.encryption.key", "rawdata-staging-altinn3-encryption-key")
-            .values("rawdata.encryption.salt", "rawdata-staging-altinn3-encryption-salt")
-            .build();
+            .values("rawdata.encryption.salt", "rawdata-staging-altinn3-encryption-salt");
 
     static final SpecificationBuilder specificationBuilder = Specification.start("ALTINN-TEST", "Altinn 3", "maskinporten-jwt-grant")
             .configure(context()
@@ -191,6 +189,7 @@ public class AltinnStagingWorkerTest {
     @Disabled
     @Test
     void collect() {
+        DynamicConfiguration configuration = configurationBuilder.build();
         Worker.newBuilder()
                 .configuration(configuration.asMap())
                 .specification(specificationBuilder)
@@ -202,6 +201,7 @@ public class AltinnStagingWorkerTest {
     @Disabled
     @Test
     void collectAndWriteToOutput() throws InterruptedException {
+        DynamicConfiguration configuration = configurationBuilder.build();
         TestServer testServer = TestServer.create(configuration);
         TestClient testClient = TestClient.create(testServer);
         testServer.start();

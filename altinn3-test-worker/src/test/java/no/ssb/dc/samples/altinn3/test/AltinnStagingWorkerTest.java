@@ -16,6 +16,7 @@ import no.ssb.dc.api.node.builder.SecurityBuilder;
 import no.ssb.dc.api.node.builder.SpecificationBuilder;
 import no.ssb.dc.api.util.CommonUtils;
 import no.ssb.dc.api.util.JsonParser;
+import no.ssb.dc.application.ssl.SecretManagerSSLResource;
 import no.ssb.dc.core.executor.Worker;
 import no.ssb.dc.core.handler.JwtTokenBodyPublisherProducerHandler;
 import no.ssb.dc.core.security.CertificateFactory;
@@ -30,35 +31,20 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static no.ssb.dc.api.Builders.addContent;
-import static no.ssb.dc.api.Builders.body;
-import static no.ssb.dc.api.Builders.bodyPublisher;
-import static no.ssb.dc.api.Builders.claims;
-import static no.ssb.dc.api.Builders.context;
-import static no.ssb.dc.api.Builders.execute;
-import static no.ssb.dc.api.Builders.forEach;
-import static no.ssb.dc.api.Builders.get;
-import static no.ssb.dc.api.Builders.headerClaims;
-import static no.ssb.dc.api.Builders.jqpath;
-import static no.ssb.dc.api.Builders.jwt;
-import static no.ssb.dc.api.Builders.jwtToken;
-import static no.ssb.dc.api.Builders.paginate;
-import static no.ssb.dc.api.Builders.parallel;
-import static no.ssb.dc.api.Builders.post;
-import static no.ssb.dc.api.Builders.publish;
-import static no.ssb.dc.api.Builders.regex;
-import static no.ssb.dc.api.Builders.security;
-import static no.ssb.dc.api.Builders.sequence;
-import static no.ssb.dc.api.Builders.status;
-import static no.ssb.dc.api.Builders.whenVariableIsNull;
+import static no.ssb.dc.api.Builders.*;
 import static no.ssb.dc.api.node.builder.SpecificationBuilder.GLOBAL_CONFIGURATION;
 
-public class AltinnWorkerTest {
+public class AltinnStagingWorkerTest {
 
-    static final Logger LOG = LoggerFactory.getLogger(AltinnWorkerTest.class);
+    static final Logger LOG = LoggerFactory.getLogger(AltinnStagingWorkerTest.class);
+
+    static final DynamicConfiguration securityConfiguration = new StoreBasedDynamicConfiguration.Builder()
+            .propertiesResource("application-override.properties")
+            .build();
 
     static final DynamicConfiguration configuration = new StoreBasedDynamicConfiguration.Builder()
             .propertiesResource("application-override.properties") // gitignored
@@ -68,6 +54,19 @@ public class AltinnWorkerTest {
             .values("data.collector.rawdata.dump.enabled", "true")
             .values("data.collector.rawdata.dump.location", "")
             .values("data.collector.rawdata.dump.topic", "altinn-test")
+
+            .values("data.collector.sslBundle.provider", "google-secret-manager")
+            .values("data.collector.sslBundle.gcp.projectId", "ssb-team-dapla")
+            .values("data.collector.sslBundle.gcp.serviceAccountKeyPath", getServiceAccountFile(securityConfiguration))
+            .values("data.collector.sslBundle.type", "p12")
+            .values("data.collector.sslBundle.name", "ssb-test-certs")
+            .values("data.collector.sslBundle.archiveCertificate", "ssb-test-p12-certificate")
+            .values("data.collector.sslBundle.passphrase", "ssb-test-p12-passphrase")
+            .values("rawdata.encryption.provider", "google-secret-manager")
+            .values("rawdata.encryption.gcp.serviceAccountKeyPath", getServiceAccountFile(securityConfiguration))
+            .values("rawdata.encryption.gcp.projectId", "ssb-team-dapla")
+            .values("rawdata.encryption.key", "rawdata-staging-altinn3-encryption-key")
+            .values("rawdata.encryption.salt", "rawdata-staging-altinn3-encryption-salt")
             .build();
 
     static final SpecificationBuilder specificationBuilder = Specification.start("ALTINN-TEST", "Altinn 3", "maskinporten-jwt-grant")
@@ -75,7 +74,7 @@ public class AltinnWorkerTest {
                     .topic("altinn-test")
                     .variable("nextPage", null) // TODO ask Altinn about self and next url parameters
                     .variable("appId", "${ENV.'ssb.altinn.app-id'}")
-                    .variable("clientId", "${ENV.'ssb.altinn.clientId'}")
+                    .variable("clientId", "${ENV.'ssb.altinn.test.clientId'}")
                     .variable("jwtGrantTimeToLiveInSeconds", "${ENV.'ssb.jwtGrant.expiration'}")
             )
             .configure(security()
@@ -87,7 +86,8 @@ public class AltinnWorkerTest {
                                     .audience("https://ver2.maskinporten.no/")
                                     .issuer("${clientId}")
                                     .claim("resource", "https://tt02.altinn.no/maskinporten-api/")
-                                    .claim("scope", "altinn:instances.read altinn:instances.write")
+//                                    .claim("scope", "altinn:instances.read altinn:instances.write")
+                                    .claim("scope", "altinn:serviceowner/instances.read altinn:serviceowner/instances.write")
                                     .timeToLiveInSeconds("${jwtGrantTimeToLiveInSeconds}")
                             )
                     )
@@ -191,16 +191,12 @@ public class AltinnWorkerTest {
     @Disabled
     @Test
     void collect() {
-        String serialized = specificationBuilder.serialize();
-        LOG.trace("{}", serialized);
-
         Worker.newBuilder()
                 .configuration(configuration.asMap())
                 .specification(specificationBuilder)
-                .buildCertificateFactory(CommonUtils.currentPath())
+                .useBusinessSSLResourceSupplier(() -> new SecretManagerSSLResource(configuration))
                 .build()
                 .run();
-
     }
 
     @Disabled
@@ -235,6 +231,14 @@ public class AltinnWorkerTest {
         }
 
         Files.writeString(targetPath.resolve("specs").resolve("altinn3-test-spec.json"), specificationBuilder.serialize());
+    }
+
+    static String getServiceAccountFile(DynamicConfiguration configuration) {
+        String path = configuration.evaluateToString("gcp.service-account.file");
+        if (path == null || !Files.isReadable(Paths.get(path))) {
+            throw new RuntimeException("Missing 'application-override.properties'-file with required property 'gcp.service-account.file'");
+        }
+        return path;
     }
 
 }

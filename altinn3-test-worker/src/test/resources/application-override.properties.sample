@@ -1,0 +1,5 @@
+ssb.jwtGrant.expiration=30
+ssb.altinn.app-id=
+ssb.altinn.test.clientId=
+ssb.altinn.prod.clientId=
+gcp.service-account.file=

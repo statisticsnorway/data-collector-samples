@@ -94,7 +94,8 @@ public class SimpleAltinn3Test {
         // Get Instances
         List<JsonNode> instanceList;
         {
-            String url = String.format("https://platform.tt02.altinn.no/storage/api/v1/instances?org=ssb&appId=%s", configuration.evaluateToString("ssb.altinn.app-id"));
+//            String url = String.format("https://platform.tt02.altinn.no/storage/api/v1/instances?org=ssb&appId=%s", configuration.evaluateToString("ssb.altinn.app-id"));
+            String url = String.format("https://platform.altinn.no/storage/api/v1/instances?org=ssb&appId=%s", configuration.evaluateToString("ssb.altinn.app-id"));
             LOG.trace("GetInstanceData-URL: {}", url);
             Response response = doGetRequest(url, jwtReplacementToken);
             assertEquals(200, response.statusCode(), getHttpError(response));
@@ -126,7 +127,8 @@ public class SimpleAltinn3Test {
                 for (JsonNode dataElement : dataElements) {
                     String dataId = jqQueryStringLiteral(dataElement, ".id");
                     String instanceGuid = jqQueryStringLiteral(dataElement, ".instanceGuid");
-                    String url = String.format("https://platform.tt02.altinn.no/storage/api/v1/instances/%s/data/%s", instanceId, dataId);
+//                    String url = String.format("https://platform.tt02.altinn.no/storage/api/v1/instances/%s/data/%s", instanceId, dataId);
+                    String url = String.format("https://platform.altinn.no/storage/api/v1/instances/%s/data/%s", instanceId, dataId);
                     LOG.trace("Instance-Data-URL: {}", url);
                     Response response = doGetRequest(url, jwtReplacementToken, "application/xml");
                     if (response.statusCode() == 500) {
@@ -154,8 +156,11 @@ public class SimpleAltinn3Test {
 
     String createMaskinportenJwtGrant(int expirationInSeconds) {
         // Load BusinessSSL
-        CertificateFactory certificateFactory = CertificateFactory.scanAndCreate(CommonUtils.currentPath());
-        CertificateContext certificateContext = certificateFactory.getCertificateContext("ssb-test-certs");
+        final Path scanDirectory = CommonUtils.currentPath().resolve("certs");
+        LOG.trace("Certs dir: {}", scanDirectory);
+        CertificateFactory certificateFactory = CertificateFactory.scanAndCreate(scanDirectory);
+//        CertificateContext certificateContext = certificateFactory.getCertificateContext("ssb-test-certs");
+        CertificateContext certificateContext = certificateFactory.getCertificateContext("ssb-prod-certs");
         assertNotNull(certificateContext);
 
         // Create Java JWT Algorithm using RSA PublicKey and PrivateKey
@@ -176,10 +181,15 @@ public class SimpleAltinn3Test {
         // Create JWT Grant and Sign
         return JWT.create()
                 .withHeader(headerClaims)
-                .withAudience("https://ver2.maskinporten.no/")
-                .withClaim("resource", "https://tt02.altinn.no/maskinporten-api/")
+//                .withAudience("https://ver2.maskinporten.no/")
+                .withAudience("https://maskinporten.no/")
+//                .withClaim("resource", "https://tt02.altinn.no/maskinporten-api/")
+                .withClaim("resource", "https://altinn.no/maskinporten-api/")
                 .withClaim("scope", "altinn:instances.read altinn:instances.write")
-                .withIssuer(configuration.evaluateToString("ssb.altinn.clientId"))
+//                .withClaim("scope", "altinn:serviceowner/intances.read altinn:serviceowner/intances.write")
+//                .withClaim("scope", "serviceowner/intances.read serviceowner/intances.write")
+//                .withIssuer(configuration.evaluateToString("ssb.altinn.test.clientId"))
+                .withIssuer(configuration.evaluateToString("ssb.altinn.prod.clientId"))
                 .withExpiresAt(Date.from(Instant.now().atOffset(ZoneOffset.UTC).plusSeconds(expirationInSeconds).toInstant()))
                 .withIssuedAt(Date.from(Instant.now().atOffset(ZoneOffset.UTC).toInstant()))
                 .withJWTId(UUID.randomUUID().toString())
@@ -189,7 +199,8 @@ public class SimpleAltinn3Test {
     String getMaskinportenJwtAccessToken(String jwtGrant) {
         String payload = String.format("grant_type=%s&assertion=%s", "urn:ietf:params:oauth:grant-type:jwt-bearer", jwtGrant);
         Request request = Request.newRequestBuilder()
-                .url("https://ver2.maskinporten.no/token")
+//                .url("https://ver2.maskinporten.no/token")
+                .url("https://maskinporten.no/token")
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .POST(payload.getBytes())
                 .build();
@@ -204,7 +215,8 @@ public class SimpleAltinn3Test {
     }
 
     String getAltinnJwtGrant(String maskinportenJwtAccessToken) {
-        Response response = doGetRequest("https://platform.tt02.altinn.no/authentication/api/v1/exchange/maskinporten", maskinportenJwtAccessToken, "plain/text");
+//        Response response = doGetRequest("https://platform.tt02.altinn.no/authentication/api/v1/exchange/maskinporten", maskinportenJwtAccessToken, "plain/text");
+        Response response = doGetRequest("https://platform.altinn.no/authentication/api/v1/exchange/maskinporten", maskinportenJwtAccessToken, "plain/text");
         assertEquals(200, response.statusCode(), getHttpError(response));
         String replacementAccessToken = new String(response.body(), StandardCharsets.UTF_8);
         if (LOG_ACCESS_TOKENS) {

@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static no.ssb.dc.api.Builders.*;
 import static no.ssb.dc.api.node.builder.SpecificationBuilder.GLOBAL_CONFIGURATION;
@@ -45,7 +46,7 @@ public class AltinnStagingWorkerTest {
     static final StoreBasedDynamicConfiguration.Builder securityConfiguration = new StoreBasedDynamicConfiguration.Builder()
             .propertiesResource("application-override.properties");
 
-    static final StoreBasedDynamicConfiguration.Builder configurationBuilder = new StoreBasedDynamicConfiguration.Builder()
+    static final Supplier<StoreBasedDynamicConfiguration.Builder> configurationBuilder = () -> new StoreBasedDynamicConfiguration.Builder()
             .propertiesResource("application-override.properties") // gitignored
             .values("content.stream.connector", "rawdata")
             .values("rawdata.client.provider", "memory")
@@ -76,19 +77,19 @@ public class AltinnStagingWorkerTest {
                     .variable("jwtGrantTimeToLiveInSeconds", "${ENV.'ssb.jwtGrant.expiration'}")
             )
             .configure(security()
-                    .identity(jwt("maskinporten",
-                            headerClaims()
-                                    .alg("RS256")
-                                    .x509CertChain("ssb-test-certs"),
-                            claims()
-                                    .audience("https://ver2.maskinporten.no/")
-                                    .issuer("${clientId}")
-                                    .claim("resource", "https://tt02.altinn.no/maskinporten-api/")
+                            .identity(jwt("maskinporten",
+                                    headerClaims()
+                                            .alg("RS256")
+                                            .x509CertChain("ssb-test-certs"),
+                                    claims()
+                                            .audience("https://ver2.maskinporten.no/")
+                                            .issuer("${clientId}")
+                                            .claim("resource", "https://tt02.altinn.no/maskinporten-api/")
 //                                    .claim("scope", "altinn:instances.read altinn:instances.write")
-                                    .claim("scope", "altinn:serviceowner/instances.read altinn:serviceowner/instances.write")
-                                    .timeToLiveInSeconds("${jwtGrantTimeToLiveInSeconds}")
+                                            .claim("scope", "altinn:serviceowner/instances.read altinn:serviceowner/instances.write")
+                                            .timeToLiveInSeconds("${jwtGrantTimeToLiveInSeconds}")
+                                    )
                             )
-                    )
             ).function(post("maskinporten-jwt-grant")
                     .url("https://ver2.maskinporten.no/token/api/v1/token")
                     .data(bodyPublisher()
@@ -127,9 +128,9 @@ public class AltinnStagingWorkerTest {
                             .variable("position", regex(jqpath(".id"), "([^\\/]+$)")) // instanceGuid is position
                             .variable("ownerPartyId", jqpath(".instanceOwner.partyId"))
                             .pipe(addContent("${position}", "entry")
-                                .storeState("ownerPartyId", "${ownerPartyId}")
-                                .storeState("instanceGuid", "${position}")
-                                .storeState("ackURL", "https://platform.tt02.altinn.no/storage/api/v1/sbl/instances/${ownerPartyId}/${position}")
+                                    .storeState("ownerPartyId", "${ownerPartyId}")
+                                    .storeState("instanceGuid", "${position}")
+                                    .storeState("ackURL", "https://platform.tt02.altinn.no/storage/api/v1/sbl/instances/${ownerPartyId}/${position}")
                             )
                             .pipe(forEach(jqpath(".data[]"))
                                     .pipe(execute("download-file")
@@ -189,7 +190,7 @@ public class AltinnStagingWorkerTest {
     @Disabled
     @Test
     void collect() {
-        DynamicConfiguration configuration = configurationBuilder.build();
+        DynamicConfiguration configuration = configurationBuilder.get().build();
         Worker.newBuilder()
                 .configuration(configuration.asMap())
                 .specification(specificationBuilder)
@@ -201,12 +202,12 @@ public class AltinnStagingWorkerTest {
     @Disabled
     @Test
     void collectAndWriteToOutput() throws InterruptedException {
-        DynamicConfiguration configuration = configurationBuilder.build();
+        DynamicConfiguration configuration = configurationBuilder.get().build();
         TestServer testServer = TestServer.create(configuration);
         TestClient testClient = TestClient.create(testServer);
         testServer.start();
         testClient.put("/tasks", specificationBuilder.serialize());
-        while(true) {
+        while (true) {
             ResponseHelper<String> response = testClient.get("/tasks");
             ArrayNode list = JsonParser.createJsonParser().fromJson(response.body(), ArrayNode.class);
             if (list.size() > 0) {

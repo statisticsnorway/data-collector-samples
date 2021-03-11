@@ -98,10 +98,19 @@ public class EnhetsregisteretUpdatesWorkerTest {
                     )
                     .pipe(parallel(jqpath("._embedded.oppdaterteEnheter[]?"))
                             .variable("position", jqpath(".oppdateringsid"))
-                            .pipe(addContent("${position}", "enhet"))
+                            .pipe(addContent("${position}", "entry"))
+                            .pipe(execute("event-document")
+                                    .inputVariable("eventURL", jqpath("._links.enhet.href"))
+                                    .requiredInput("position")
+                            )
                             .pipe(publish("${position}"))
                     )
                     .returnVariables("nextPosition")
+            )
+            .function(get("event-document")
+                    .url("${eventURL}")
+                    .validate(status().success(200).fail(400).fail(404).fail(500))
+                    .pipe(addContent("${position}", "event"))
             );
 
     @Disabled

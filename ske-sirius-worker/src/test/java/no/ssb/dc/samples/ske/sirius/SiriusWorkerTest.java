@@ -11,22 +11,9 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import static no.ssb.dc.api.Builders.addContent;
-import static no.ssb.dc.api.Builders.bodyContains;
-import static no.ssb.dc.api.Builders.context;
-import static no.ssb.dc.api.Builders.eval;
-import static no.ssb.dc.api.Builders.execute;
-import static no.ssb.dc.api.Builders.get;
-import static no.ssb.dc.api.Builders.nextPage;
-import static no.ssb.dc.api.Builders.paginate;
-import static no.ssb.dc.api.Builders.parallel;
-import static no.ssb.dc.api.Builders.publish;
-import static no.ssb.dc.api.Builders.security;
-import static no.ssb.dc.api.Builders.sequence;
-import static no.ssb.dc.api.Builders.status;
-import static no.ssb.dc.api.Builders.whenVariableIsNull;
-import static no.ssb.dc.api.Builders.xpath;
+import static no.ssb.dc.api.Builders.*;
 
 // https://skatteetaten.github.io/datasamarbeid-api-dokumentasjon/reference_skattemelding
 public class SiriusWorkerTest {
@@ -39,12 +26,13 @@ public class SiriusWorkerTest {
 //                    .variable("baseURL", "https://api.skatteetaten.no")
                     .variable("rettighetspakke", "ssb")
                     .variable("hentAntallMeldingerOmGangen", "100")
-                    .variable("hendelse", "utkast")
+//                    .variable("hendelse", "utkast")
+                    .variable("hendelse", "fastsatt")
                     .variable("nextSequence", "${cast.toLong(contentStream.lastOrInitialPosition(0)) + 1}")
             )
             .configure(security()
-                    .sslBundleName("ske-test-certs")
-//                    .sslBundleName("ske-prod-certs")
+                    .sslBundleName("ssb-test-certs")
+//                    .sslBundleName("ssb-p12-certs")
             )
             .function(paginate("loop")
                     .variable("fromSequence", "${nextSequence}")
@@ -93,8 +81,8 @@ public class SiriusWorkerTest {
     @Disabled
     @Test
     public void thatWorkerCollectSiriusData() throws InterruptedException {
-        Path scanDirectory = CommonUtils.currentPath();
-//        Path scanDirectory = Paths.get("/Volumes/SSB BusinessSSL/certs");
+//        Path scanDirectory = CommonUtils.currentPath().resolve("certs");
+        Path scanDirectory = Paths.get("/Volumes/SSB BusinessSSL/certs");
 
         Worker.newBuilder()
                 .configuration(new StoreBasedDynamicConfiguration.Builder()

@@ -11,46 +11,63 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import static no.ssb.dc.api.Builders.addContent;
-import static no.ssb.dc.api.Builders.context;
-import static no.ssb.dc.api.Builders.execute;
-import static no.ssb.dc.api.Builders.get;
-import static no.ssb.dc.api.Builders.nextPage;
-import static no.ssb.dc.api.Builders.paginate;
-import static no.ssb.dc.api.Builders.parallel;
-import static no.ssb.dc.api.Builders.publish;
-import static no.ssb.dc.api.Builders.regex;
-import static no.ssb.dc.api.Builders.security;
-import static no.ssb.dc.api.Builders.sequence;
-import static no.ssb.dc.api.Builders.status;
-import static no.ssb.dc.api.Builders.whenVariableIsNull;
-import static no.ssb.dc.api.Builders.xpath;
+import static no.ssb.dc.api.Builders.*;
 
-public class TvinnWorkerTest {
+public class TvinnTestWorkerTest {
 
-    static final SpecificationBuilder specificationBuilder = Specification.start("TOLL-TVINN","Collect Tvinn", "loop")
+    static final SpecificationBuilder specificationBuilder = Specification.start("TOLL-TVINN-TEST","Collect Tvinn Test", "maskinporten-jwt-grant")
             .configure(context()
                     .topic("tvinn-test")
-                    .header("Content-Type", "application/xml")
-//                    .variable("TestURL", "https://mp-at.toll.no")
                     .variable("TestURL", "https://api-test.toll.no")
-                    .variable("ProduksjonURL", "https://mp-sit.toll.no")
+//                    .variable("ProduksjonURL", "https://api.toll.no")
+                    .variable("clientId", "30ccfd37-84dd-4448-9c48-23d58432a6b1")
+                    .variable("jwtGrantTimeToLiveInSeconds", "30")
                     .variable("nextMarker", "${contentStream.lastOrInitialPosition(\"last\")}")
             )
             .configure(security()
-                    .sslBundleName("toll-test-certs")
+                            .identity(jwt("maskinporten",
+                                    headerClaims()
+                                            .alg("RS256")
+                                            .x509CertChain("ssb-test-certs"),
+                                    claims()
+                                            .audience("https://ver2.maskinporten.no/")
+                                            .issuer("30ccfd37-84dd-4448-9c48-23d58432a6b1")
+//                                            .claim("resource", "https://api-test.toll.no/api/declaration/declaration-clearance-feed/atom")
+                                            .claim("scope", "toll:declaration/clearance/feed.read")
+                                            .timeToLiveInSeconds("30")
+                                    )
+                            )
+            )
+            .function(post("maskinporten-jwt-grant")
+                    .url("https://ver2.maskinporten.no/token/v1/token")
+//                            .url("https://maskinporten.no/token/v1/token")
+                            .data(bodyPublisher()
+                                    .urlEncoded(jwtToken()
+                                            .identityId("maskinporten")
+                                            .bindTo("JWT_GRANT")
+                                            .token("grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${JWT_GRANT}")
+                                    )
+                            )
+                            .validate(status().success(200))
+                            .pipe(execute("loop")
+//                            .pipe(execute("loop")
+                                            .inputVariable("accessToken", jqpath(".access_token"))
+                            )
             )
             .function(paginate("loop")
                     .variable("fromMarker", "${nextMarker}")
                     .addPageContent("fromMarker")
-                    .iterate(execute("event-list"))
+                    .iterate(execute("event-list").requiredInput("accessToken"))
                     .prefetchThreshold(150)
                     .until(whenVariableIsNull("nextMarker"))
             )
             .function(get("event-list")
 //                    .url("${TestURL}/atomfeed/toll/deklarasjon-ekstern-feed/?marker=${fromMarker}&limit=25&direction=forward")
                     .url("${TestURL}/api/declaration/declaration-clearance-feed/atom?marker=${fromMarker}&limit=25&direction=forward")
+                    .header("Content-Type", "application/xml")
+                    .header("Authorization", "Bearer ${accessToken}")
                     .validate(status().success(200))
                     .pipe(sequence(xpath("/feed/entry"))
                             .expected(xpath("/entry/id"))
@@ -71,6 +88,8 @@ public class TvinnWorkerTest {
     @Disabled
     @Test
     public void testCollectTvinn() {
+        String serialized = specificationBuilder.serialize();
+        SpecificationBuilder spec = Specification.deserialize(serialized);
         Worker.newBuilder()
                 .configuration(new StoreBasedDynamicConfiguration.Builder()
                         .values("content.stream.connector", "rawdata")
@@ -85,10 +104,11 @@ public class TvinnWorkerTest {
                         .values("rawdata.postgres.consumer.prefetch-poll-interval-when-empty", "1000")
                         .build()
                         .asMap())
-                .buildCertificateFactory(CommonUtils.currentPath())
+//                .buildCertificateFactory(CommonUtils.currentPath())
+                .buildCertificateFactory(Paths.get("/Volumes/SSB BusinessSSL/certs"))
                 //.stopAtNumberOfIterations(5)
                 .printConfiguration()
-                .specification(specificationBuilder)
+                .specification(spec)
                 .build()
                 .run();
     }
@@ -96,7 +116,7 @@ public class TvinnWorkerTest {
     @Disabled
     @Test
     public void writeTargetConsumerSpec() throws IOException {
-        Path currentPath = CommonUtils.currentPath();
+        Path currentPath = CommonUtils.currentPath().getParent().getParent();
         Path targetPath = currentPath.resolve("data-collection-consumer-specifications");
 
         boolean targetProjectExists = targetPath.toFile().exists();

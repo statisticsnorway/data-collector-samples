@@ -31,22 +31,17 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static no.ssb.dc.api.Builders.*;
 import static no.ssb.dc.api.node.builder.SpecificationBuilder.GLOBAL_CONFIGURATION;
 
-public class AltinnStagingWorkerTest {
+public class AltinnProdWorkerTest {
 
-    static final Logger LOG = LoggerFactory.getLogger(AltinnStagingWorkerTest.class);
+    static final Logger LOG = LoggerFactory.getLogger(AltinnProdWorkerTest.class);
 
-    static final StoreBasedDynamicConfiguration.Builder securityConfiguration = new StoreBasedDynamicConfiguration.Builder()
-            .propertiesResource("application-override.properties");
-
-    static final Supplier<StoreBasedDynamicConfiguration.Builder> configurationBuilder = () -> new StoreBasedDynamicConfiguration.Builder()
+    static final DynamicConfiguration configuration = new StoreBasedDynamicConfiguration.Builder()
             .propertiesResource("application-override.properties") // gitignored
             .values("content.stream.connector", "rawdata")
             .values("rawdata.client.provider", "filesystem")
@@ -65,18 +60,18 @@ public class AltinnStagingWorkerTest {
 
             .values("data.collector.sslBundle.provider", "google-secret-manager")
             .values("data.collector.sslBundle.gcp.projectId", "ssb-team-dapla")
-            .values("data.collector.sslBundle.gcp.serviceAccountKeyPath", getServiceAccountFile(securityConfiguration.build()))
+            .values("data.collector.sslBundle.gcp.serviceAccountKeyPath", "/Users/oranheim/bin/ssb-team-dapla-rawdata-altinn3-8bc551b20687.json")
             .values("data.collector.sslBundle.type", "p12")
             .values("data.collector.sslBundle.name", "ssb-test-certs")
-            .values("data.collector.sslBundle.archiveCertificate", "ssb-test-p12-certificate")
-            .values("data.collector.sslBundle.passphrase", "ssb-test-p12-passphrase")
+            .values("data.collector.sslBundle.archiveCertificate", "ssb-prod-p12-certificate")
+            .values("data.collector.sslBundle.passphrase", "ssb-prod-p12-passphrase")
 
-//            .values("rawdata.encryption.provider", "google-secret-manager")
-//            .values("rawdata.encryption.gcp.serviceAccountKeyPath", getServiceAccountFile(securityConfiguration.build()))
-//            .values("rawdata.encryption.gcp.projectId", "ssb-team-dapla")
-//            .values("rawdata.encryption.key", "rawdata-staging-altinn3-encryption-key")
-//            .values("rawdata.encryption.salt", "rawdata-staging-altinn3-encryption-salt")
-            ;
+            .values("rawdata.encryption.provider", "google-secret-manager")
+            .values("rawdata.encryption.gcp.serviceAccountKeyPath", "/Users/oranheim/bin/ssb-team-dapla-rawdata-altinn3-8bc551b20687.json")
+            .values("rawdata.encryption.gcp.projectId", "ssb-team-dapla")
+            .values("rawdata.encryption.key", "rawdata-staging-altinn3-encryption-key")
+            .values("rawdata.encryption.salt", "rawdata-staging-altinn3-encryption-salt")
+            .build();
 
     static final SpecificationBuilder specificationBuilder = Specification.start("ALTINN-TEST", "Altinn 3", "maskinporten-jwt-grant")
             .configure(context()
@@ -87,19 +82,19 @@ public class AltinnStagingWorkerTest {
                     .variable("jwtGrantTimeToLiveInSeconds", "${ENV.'ssb.jwtGrant.expiration'}")
             )
             .configure(security()
-                            .identity(jwt("maskinporten",
-                                    headerClaims()
-                                            .alg("RS256")
-                                            .x509CertChain("ssb-test-certs"),
-                                    claims()
-                                            .audience("https://ver2.maskinporten.no/")
-                                            .issuer("${clientId}")
-                                            .claim("resource", "https://tt02.altinn.no/maskinporten-api/")
+                    .identity(jwt("maskinporten",
+                            headerClaims()
+                                    .alg("RS256")
+                                    .x509CertChain("ssb-test-certs"),
+                            claims()
+                                    .audience("https://ver2.maskinporten.no/")
+                                    .issuer("${clientId}")
+                                    .claim("resource", "https://tt02.altinn.no/maskinporten-api/")
 //                                    .claim("scope", "altinn:instances.read altinn:instances.write")
-                                            .claim("scope", "altinn:serviceowner/instances.read altinn:serviceowner/instances.write")
-                                            .timeToLiveInSeconds("${jwtGrantTimeToLiveInSeconds}")
-                                    )
+                                    .claim("scope", "altinn:serviceowner/instances.read altinn:serviceowner/instances.write")
+                                    .timeToLiveInSeconds("${jwtGrantTimeToLiveInSeconds}")
                             )
+                    )
             ).function(post("maskinporten-jwt-grant")
                     .url("https://ver2.maskinporten.no/token/api/v1/token")
                     .data(bodyPublisher()
@@ -138,9 +133,9 @@ public class AltinnStagingWorkerTest {
                             .variable("position", regex(jqpath(".id"), "([^\\/]+$)")) // instanceGuid is position
                             .variable("ownerPartyId", jqpath(".instanceOwner.partyId"))
                             .pipe(addContent("${position}", "entry")
-                                    .storeState("ownerPartyId", "${ownerPartyId}")
-                                    .storeState("instanceGuid", "${position}")
-                                    .storeState("ackURL", "https://platform.tt02.altinn.no/storage/api/v1/sbl/instances/${ownerPartyId}/${position}")
+                                .storeState("ownerPartyId", "${ownerPartyId}")
+                                .storeState("instanceGuid", "${position}")
+                                .storeState("ackURL", "https://platform.tt02.altinn.no/storage/api/v1/sbl/instances/${ownerPartyId}/${position}")
                             )
                             .pipe(forEach(jqpath(".data[]"))
                                     .pipe(execute("download-file")
@@ -163,6 +158,20 @@ public class AltinnStagingWorkerTest {
                             .success(404) // 404 is due to success on 500 error
                     )
             );
+
+    @Disabled
+    @Test
+    void collect() {
+        String serialized = specificationBuilder.serialize();
+        //LOG.trace("{}", serialized);
+
+        Worker.newBuilder()
+                .configuration(configuration.asMap())
+                .specification(specificationBuilder)
+                .useBusinessSSLResourceSupplier(() -> new SecretManagerSSLResource(configuration))
+                .build()
+                .run();
+    }
 
     @Disabled
     @Test
@@ -199,25 +208,12 @@ public class AltinnStagingWorkerTest {
 
     @Disabled
     @Test
-    void collect() {
-        DynamicConfiguration configuration = configurationBuilder.get().build();
-        Worker.newBuilder()
-                .configuration(configuration.asMap())
-                .specification(specificationBuilder)
-                .useBusinessSSLResourceSupplier(() -> new SecretManagerSSLResource(configuration))
-                .build()
-                .run();
-    }
-
-    @Disabled
-    @Test
     void collectAndWriteToOutput() throws InterruptedException {
-        DynamicConfiguration configuration = configurationBuilder.get().build();
         TestServer testServer = TestServer.create(configuration);
         TestClient testClient = TestClient.create(testServer);
         testServer.start();
         testClient.put("/tasks", specificationBuilder.serialize());
-        while (true) {
+        while(true) {
             ResponseHelper<String> response = testClient.get("/tasks");
             ArrayNode list = JsonParser.createJsonParser().fromJson(response.body(), ArrayNode.class);
             if (list.size() > 0) {
@@ -242,14 +238,6 @@ public class AltinnStagingWorkerTest {
         }
 
         Files.writeString(targetPath.resolve("specs").resolve("altinn3-test-spec.json"), specificationBuilder.serialize());
-    }
-
-    static String getServiceAccountFile(DynamicConfiguration configuration) {
-        String path = configuration.evaluateToString("gcp.service-account.file");
-        if (path == null || !Files.isReadable(Paths.get(path))) {
-            throw new RuntimeException("Missing 'application-override.properties'-file with required property 'gcp.service-account.file'");
-        }
-        return path;
     }
 
 }

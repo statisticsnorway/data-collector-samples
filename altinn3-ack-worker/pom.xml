@@ -10,11 +10,11 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>data-collector-altinn3-test-worker</artifactId>
+    <artifactId>data-collector-altinn3-ack-worker</artifactId>
     <packaging>jar</packaging>
 
-    <name>Data Collector Samples Altinn3 Test Worker</name>
-    <description>Data Collector Samples Altinn3 Test Worker</description>
+    <name>Data Collector Samples Altinn3 Acknowledge Worker</name>
+    <description>Data Collector Samples Altinn3 Acknowledge Worker</description>
 
     <dependencies>
         <dependency>
